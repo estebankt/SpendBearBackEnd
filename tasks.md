@@ -105,9 +105,9 @@
 ## Backlog (Prioritized)
 
 ### Spending Module (Core)
-- [ ] Create Transaction aggregate (3h)
-- [ ] Implement Money value object (2h)
-- [ ] Create Category entity (2h)
+- [x] Create Transaction aggregate (3h)
+- [x] Implement Money value object (2h)
+- [x] Create Category entity (2h)
 - [ ] Implement CreateTransaction feature (4h)
 - [ ] Implement UpdateTransaction feature (3h)
 - [ ] Implement DeleteTransaction feature (2h)
