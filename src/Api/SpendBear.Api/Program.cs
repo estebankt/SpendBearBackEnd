@@ -41,6 +41,11 @@ try
                 document.Components = new();
             }
             
+            if (document.Components.SecuritySchemes == null)
+            {
+                document.Components.SecuritySchemes = new Dictionary<string, IOpenApiSecurityScheme>();
+            }
+            
             document.Components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.Http,
