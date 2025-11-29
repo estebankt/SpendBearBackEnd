@@ -1,4 +1,6 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SpendBear.Infrastructure.Core.Extensions;
+using Identity.Infrastructure.Data;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +16,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     });
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
+builder.Services.AddPostgreSqlContext<IdentityDbContext>(builder.Configuration);
 
 var app = builder.Build();
 

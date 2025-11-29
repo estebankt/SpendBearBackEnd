@@ -15,7 +15,7 @@
   - Dependencies: Solution structure
   - Completed: 2025-11-29
 
-- [ ] **Configure PostgreSQL with EF Core**
+- [x] **Configure PostgreSQL with EF Core**
   - Details: Connection to Neon, base DbContext configuration
   - Estimate: 2h
   - Dependencies: Shared kernel
