@@ -7,6 +7,11 @@ namespace SpendBear.SharedKernel;
 public interface IRepository<TAggregate> where TAggregate : AggregateRoot
 {
     /// <summary>
+    /// Gets the Unit of Work this repository belongs to.
+    /// </summary>
+    IUnitOfWork UnitOfWork { get; }
+
+    /// <summary>
     /// Gets an aggregate by its identifier.
     /// </summary>
     Task<TAggregate?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);

@@ -7,12 +7,10 @@ namespace Identity.Application.Features.RegisterUser;
 public class RegisterUserHandler
 {
     private readonly IUserRepository _userRepository;
-    private readonly IUnitOfWork _unitOfWork;
 
-    public RegisterUserHandler(IUserRepository userRepository, IUnitOfWork unitOfWork)
+    public RegisterUserHandler(IUserRepository userRepository)
     {
         _userRepository = userRepository;
-        _unitOfWork = unitOfWork;
     }
 
     public async Task<Result<Guid>> Handle(RegisterUserCommand command, CancellationToken cancellationToken = default)
@@ -35,7 +33,7 @@ public class RegisterUserHandler
         }
 
         await _userRepository.AddAsync(userResult.Value, cancellationToken);
-        await _unitOfWork.SaveChangesAsync(cancellationToken);
+        await _userRepository.UnitOfWork.SaveChangesAsync(cancellationToken);
 
         return Result.Success(userResult.Value.Id);
     }

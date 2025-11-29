@@ -7,7 +7,7 @@ namespace SpendBear.Infrastructure.Core.Data;
 /// Base DbContext for all module contexts.
 /// Provides common functionality like domain event handling and auditing.
 /// </summary>
-public abstract class BaseDbContext : DbContext
+public abstract class BaseDbContext : DbContext, IUnitOfWork
 {
     protected BaseDbContext(DbContextOptions options) : base(options)
     {
@@ -42,6 +42,21 @@ public abstract class BaseDbContext : DbContext
         }
 
         return result;
+    }
+
+    public async Task BeginTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        await Database.BeginTransactionAsync(cancellationToken);
+    }
+
+    public async Task CommitTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        await Database.CommitTransactionAsync(cancellationToken);
+    }
+
+    public async Task RollbackTransactionAsync(CancellationToken cancellationToken = default)
+    {
+        await Database.RollbackTransactionAsync(cancellationToken);
     }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)

@@ -18,6 +18,8 @@ public abstract class BaseRepository<TAggregate> : IRepository<TAggregate>
         DbSet = context.Set<TAggregate>();
     }
 
+    public IUnitOfWork UnitOfWork => (IUnitOfWork)Context;
+
     public virtual async Task<TAggregate?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default)
     {
         return await DbSet.FindAsync([id], cancellationToken);
