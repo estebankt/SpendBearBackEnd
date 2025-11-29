@@ -51,10 +51,14 @@
     - [completed] Configure OpenApi security scheme (JWT)
     - [completed] Enable Scalar UI in Program.cs
 
-- [ ] **Create Docker configuration**
+- [x] **Create Docker configuration**
   - Details: Dockerfile for API, docker-compose for local dev
   - Estimate: 2h
   - Dependencies: None
+  - Subtasks:
+    - [completed] Create Dockerfile for API
+    - [completed] Create .dockerignore
+    - [completed] Create docker-compose.yml (Postgres, API)
 
 ### Low Priority
 - [ ] **Setup Azure DevOps pipeline**
