@@ -20,10 +20,16 @@
   - Estimate: 2h
   - Dependencies: Shared kernel
 
-- [ ] **Setup Auth0 integration**
+- [x] **Setup Auth0 integration**
   - Details: JWT validation, middleware, test endpoints
   - Estimate: 4h
   - Dependencies: API project setup
+  - Subtasks:
+    - [completed] Add authentication NuGet packages to API project
+    - [completed] Configure JWT Bearer authentication
+    - [completed] Update appsettings.json with Auth0 config
+    - [completed] Add authentication middleware to API
+    - [completed] Create test controller with [Authorize] attribute
 
 ### Medium Priority
 - [ ] **Configure Serilog logging**
