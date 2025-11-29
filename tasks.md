@@ -74,7 +74,7 @@
 ## Next Sprint (Week 3-4: Identity Module)
 
 ### Ready
-- [ ] **Implement User aggregate**
+- [x] **Implement User aggregate**
   - Details: User entity with Auth0UserId, preferences
   - Estimate: 2h
   - Owner: Unassigned
