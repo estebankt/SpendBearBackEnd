@@ -84,8 +84,12 @@
   - Estimate: 3h
   - Owner: Unassigned
 
-- [ ] **Implement UserRepository**  - Details: EF Core implementation with unique constraints
+- [x] **Implement UserRepository**
+
+  - Details: EF Core implementation with unique constraints
+
   - Estimate: 2h
+
   - Owner: Unassigned
   
 - [ ] **Create GetProfile query**

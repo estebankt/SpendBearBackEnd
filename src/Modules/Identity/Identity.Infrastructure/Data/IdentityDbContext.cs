@@ -1,3 +1,4 @@
+using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using SpendBear.Infrastructure.Core.Data;
 
@@ -13,6 +14,6 @@ public class IdentityDbContext : BaseDbContext
     {
         base.OnModelCreating(modelBuilder);
         // Apply configurations specific to the Identity module here
-        // modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
     }
 }
