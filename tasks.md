@@ -92,7 +92,7 @@
 
   - Owner: Unassigned
   
-- [ ] **Create GetProfile query**
+- [x] **Create GetProfile query**
   - Details: Query handler, DTO mapping
   - Estimate: 1h
   - Owner: Unassigned
