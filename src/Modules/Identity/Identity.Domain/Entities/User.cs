@@ -28,13 +28,13 @@ public class User : AggregateRoot
     public static Result<User> Create(string auth0UserId, string email, string firstName, string lastName)
     {
         if (string.IsNullOrWhiteSpace(auth0UserId))
-            return Result<User>.Failure(new Error("User.InvalidAuth0Id", "Auth0UserId is required"));
+            return Result.Failure<User>(new Error("User.InvalidAuth0Id", "Auth0UserId is required"));
             
         if (string.IsNullOrWhiteSpace(email))
-            return Result<User>.Failure(new Error("User.InvalidEmail", "Email is required"));
+            return Result.Failure<User>(new Error("User.InvalidEmail", "Email is required"));
 
         var user = new User(auth0UserId, email, firstName, lastName);
-        return Result<User>.Success(user);
+        return Result.Success(user);
     }
 
     public void UpdateProfile(string firstName, string lastName)
