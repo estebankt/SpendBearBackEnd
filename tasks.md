@@ -32,10 +32,15 @@
     - [completed] Create test controller with [Authorize] attribute
 
 ### Medium Priority
-- [ ] **Configure Serilog logging**
+- [x] **Configure Serilog logging**
   - Details: Structured logging, sinks, enrichers
   - Estimate: 2h
   - Dependencies: API setup
+  - Subtasks:
+    - [completed] Add Serilog NuGet packages to API
+    - [completed] Configure Serilog in Program.cs
+    - [completed] Update appsettings.json for Serilog
+    - [completed] Verify logging output
   
 - [ ] **Setup Swagger documentation**
   - Details: OpenAPI spec, JWT auth in Swagger UI
