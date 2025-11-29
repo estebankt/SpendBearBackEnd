@@ -97,7 +97,7 @@
   - Estimate: 1h
   - Owner: Unassigned
   
-- [ ] **Setup Identity API endpoints**
+- [x] **Setup Identity API endpoints**
   - Details: Controllers, route configuration
   - Estimate: 2h
   - Owner: Unassigned

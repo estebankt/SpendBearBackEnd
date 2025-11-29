@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SpendBear.Infrastructure.Core.Extensions;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Extensions;
+using Identity.Application.Extensions;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.OpenApi;
@@ -60,6 +61,7 @@ try
     });
     builder.Services.AddPostgreSqlContext<IdentityDbContext>(builder.Configuration);
     builder.Services.AddIdentityInfrastructure();
+    builder.Services.AddIdentityApplication();
 
     var app = builder.Build();
 

@@ -1,5 +1,6 @@
 using SpendBear.SharedKernel;
 using Identity.Domain.Repositories;
+using Identity.Domain.Entities;
 
 namespace Identity.Application.Features.GetProfile;
 
@@ -14,7 +15,16 @@ public class GetProfileHandler
 
     public async Task<Result<GetProfileResponse>> Handle(GetProfileQuery query, CancellationToken cancellationToken = default)
     {
-        var user = await _userRepository.GetByIdAsync(query.UserId, cancellationToken);
+        User? user = null;
+        if (query.UserId.HasValue)
+        {
+            user = await _userRepository.GetByIdAsync(query.UserId.Value, cancellationToken);
+        }
+        else if (!string.IsNullOrEmpty(query.Auth0UserId))
+        {
+            user = await _userRepository.GetByAuth0IdAsync(query.Auth0UserId, cancellationToken);
+        }
+
         if (user == null)
         {
             return Result.Failure<GetProfileResponse>(new Error("User.NotFound", "User not found."));
