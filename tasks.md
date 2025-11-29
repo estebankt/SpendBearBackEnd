@@ -1,0 +1,198 @@
+# Tasks - SpendBear Development
+
+## Current Sprint (Week 1-2: Foundation)
+
+### High Priority
+- [ ] **Initialize .NET solution structure**
+  - Details: Create solution with proper module separation
+  - Estimate: 2h
+  - Dependencies: None
+  
+- [ ] **Setup shared kernel project**
+  - Details: Base classes (AggregateRoot, DomainEvent, Result<T>)
+  - Estimate: 3h
+  - Dependencies: Solution structure
+  
+- [ ] **Configure PostgreSQL with EF Core**
+  - Details: Connection to Neon, base DbContext configuration
+  - Estimate: 2h
+  - Dependencies: Shared kernel
+
+- [ ] **Setup Auth0 integration**
+  - Details: JWT validation, middleware, test endpoints
+  - Estimate: 4h
+  - Dependencies: API project setup
+
+### Medium Priority
+- [ ] **Configure Serilog logging**
+  - Details: Structured logging, sinks, enrichers
+  - Estimate: 2h
+  - Dependencies: API setup
+  
+- [ ] **Setup Swagger documentation**
+  - Details: OpenAPI spec, JWT auth in Swagger UI
+  - Estimate: 1h
+  - Dependencies: API setup
+
+- [ ] **Create Docker configuration**
+  - Details: Dockerfile for API, docker-compose for local dev
+  - Estimate: 2h
+  - Dependencies: None
+
+### Low Priority
+- [ ] **Setup Azure DevOps pipeline**
+  - Details: Build, test, push to ACR
+  - Estimate: 3h
+  - Dependencies: Docker setup
+  
+- [ ] **Configure Redis caching**
+  - Details: Connection, basic cache service interface
+  - Estimate: 2h
+  - Dependencies: Infrastructure setup
+
+## Next Sprint (Week 3-4: Identity Module)
+
+### Ready
+- [ ] **Implement User aggregate**
+  - Details: User entity with Auth0UserId, preferences
+  - Estimate: 2h
+  - Owner: Unassigned
+  
+- [ ] **Create RegisterUser command**
+  - Details: Command, handler, validator (vertical slice)
+  - Estimate: 3h
+  - Owner: Unassigned
+  
+- [ ] **Implement UserRepository**
+  - Details: EF Core implementation with unique constraints
+  - Estimate: 2h
+  - Owner: Unassigned
+  
+- [ ] **Create GetProfile query**
+  - Details: Query handler, DTO mapping
+  - Estimate: 1h
+  - Owner: Unassigned
+  
+- [ ] **Setup Identity API endpoints**
+  - Details: Controllers, route configuration
+  - Estimate: 2h
+  - Owner: Unassigned
+
+## Backlog (Prioritized)
+
+### Spending Module (Core)
+- [ ] Create Transaction aggregate (3h)
+- [ ] Implement Money value object (2h)
+- [ ] Create Category entity (2h)
+- [ ] Implement CreateTransaction feature (4h)
+- [ ] Implement UpdateTransaction feature (3h)
+- [ ] Implement DeleteTransaction feature (2h)
+- [ ] Create GetTransactions query with filtering (3h)
+- [ ] Setup transaction event publishers (2h)
+- [ ] Create spending module migrations (1h)
+- [ ] Add transaction validation rules (2h)
+
+### Budgets Module (Reactive)
+- [ ] Create Budget aggregate (3h)
+- [ ] Implement CreateBudget command (3h)
+- [ ] Create TransactionCreatedEvent handler (4h)
+- [ ] Implement budget threshold detection (3h)
+- [ ] Create GetBudgetStatus query (2h)
+- [ ] Setup budget notifications (3h)
+- [ ] Implement budget period calculations (3h)
+- [ ] Add budget module migrations (1h)
+
+### Analytics Module (Projections)
+- [ ] Design analytics snapshot schema (2h)
+- [ ] Create event handlers for projections (4h)
+- [ ] Implement monthly summary aggregation (3h)
+- [ ] Create spending trends calculator (3h)
+- [ ] Setup Redis caching for dashboards (2h)
+- [ ] Implement category breakdowns (2h)
+- [ ] Create analytics API endpoints (2h)
+
+### Outbox Pattern Implementation
+- [ ] Create outbox table schema (1h)
+- [ ] Implement outbox repository (2h)
+- [ ] Create background worker for publishing (4h)
+- [ ] Add retry logic with exponential backoff (2h)
+- [ ] Implement idempotency checks (2h)
+
+### Notifications Module
+- [ ] Setup SendGrid integration (2h)
+- [ ] Create notification templates (3h)
+- [ ] Implement event subscribers (3h)
+- [ ] Add user preference checks (2h)
+- [ ] Create notification audit log (1h)
+
+### Frontend (Next.js)
+- [ ] Initialize Next.js 15 project (1h)
+- [ ] Setup TypeScript configuration (1h)
+- [ ] Configure Auth0 for frontend (3h)
+- [ ] Create transaction entry form (4h)
+- [ ] Build dashboard with charts (6h)
+- [ ] Implement budget status widgets (4h)
+- [ ] Create responsive navigation (3h)
+- [ ] Setup API client with interceptors (3h)
+
+### Testing
+- [ ] Setup xUnit test projects (1h)
+- [ ] Create domain unit tests (4h)
+- [ ] Setup TestContainers for integration tests (3h)
+- [ ] Create repository integration tests (4h)
+- [ ] Implement E2E test scenarios (6h)
+- [ ] Add API contract tests (3h)
+
+### Infrastructure & DevOps
+- [ ] Setup Kafka locally with Docker (2h)
+- [ ] Configure Prometheus monitoring (3h)
+- [ ] Setup Grafana dashboards (3h)
+- [ ] Create Azure infrastructure (Terraform) (4h)
+- [ ] Configure Azure Key Vault for secrets (2h)
+- [ ] Setup staging environment (3h)
+
+## Completed
+
+### 2024-11-29
+- [x] Project requirements analysis (2h)
+- [x] Architecture design documentation (3h)
+- [x] Technology stack selection (1h)
+
+## Technical Debt
+- [ ] Refactor to use custom mapper instead of manual mapping
+- [ ] Optimize database indexes based on query patterns
+- [ ] Implement circuit breaker for external services
+- [ ] Add comprehensive API versioning strategy
+
+## Ideas & Future Features
+- [ ] CSV/OFX bank import functionality
+- [ ] Receipt OCR with Azure Cognitive Services
+- [ ] Spending predictions with ML
+- [ ] Social features (compare with friends)
+- [ ] Recurring transaction detection
+- [ ] Bill reminder notifications
+- [ ] Savings goals module
+- [ ] Expense splitting for shared costs
+
+## Notes
+- Focus on vertical slices - complete features end-to-end
+- Prioritize Identity and Spending modules for MVP
+- Keep event schema stable - versioning is complex
+- Test Outbox pattern thoroughly before production
+- Consider using MassTransit if Kafka becomes too complex
+
+## Task States
+- **Ready**: Task is defined and can be started
+- **In Progress**: Currently being worked on
+- **Blocked**: Waiting on dependency or decision
+- **Review**: Code complete, needs review
+- **Done**: Completed and merged
+
+## Estimation Guide
+- 1h: Simple configuration or small feature
+- 2h: Standard CRUD operation or integration
+- 3h: Complex feature with validation
+- 4h: Vertical slice with tests
+- 6h: Multi-component feature
+
+Last Updated: 2024-11-29
