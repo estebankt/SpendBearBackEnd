@@ -36,7 +36,11 @@ try
     {
         options.AddDocumentTransformer((document, context, cancellationToken) =>
         {
-            document.Components ??= new();
+            if (document.Components == null)
+            {
+                document.Components = new();
+            }
+            
             document.Components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.Http,
@@ -45,11 +49,6 @@ try
                 Description = "Input your Bearer token to access this API"
             });
 
-            // Check if Security property exists
-            // var sec = document.Security;
-            
-            return Task.CompletedTask;
-            
             return Task.CompletedTask;
         });
     });
