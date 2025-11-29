@@ -1,4 +1,5 @@
 using SpendBear.SharedKernel;
+using Identity.Domain.Events;
 
 namespace Identity.Domain.Entities;
 
@@ -22,7 +23,7 @@ public class User : AggregateRoot
         LastName = lastName;
         CreatedAt = DateTime.UtcNow;
         
-        // TODO: Raise UserRegisteredEvent
+        RaiseDomainEvent(new UserRegisteredEvent(Id, Email));
     }
 
     public static Result<User> Create(string auth0UserId, string email, string firstName, string lastName)

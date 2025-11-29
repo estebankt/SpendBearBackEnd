@@ -79,13 +79,12 @@
   - Estimate: 2h
   - Owner: Unassigned
   
-- [ ] **Create RegisterUser command**
+- [x] **Create RegisterUser command**
   - Details: Command, handler, validator (vertical slice)
   - Estimate: 3h
   - Owner: Unassigned
-  
-- [ ] **Implement UserRepository**
-  - Details: EF Core implementation with unique constraints
+
+- [ ] **Implement UserRepository**  - Details: EF Core implementation with unique constraints
   - Estimate: 2h
   - Owner: Unassigned
   

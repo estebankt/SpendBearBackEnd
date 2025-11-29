@@ -1,4 +1,4 @@
-namespace SpendBear.Infrastructure.Core.Data;
+namespace SpendBear.SharedKernel;
 
 /// <summary>
 /// Unit of Work pattern interface for managing transactions.
