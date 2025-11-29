@@ -42,10 +42,14 @@
     - [completed] Update appsettings.json for Serilog
     - [completed] Verify logging output
   
-- [ ] **Setup Swagger documentation**
+- [x] **Setup Swagger documentation**
   - Details: OpenAPI spec, JWT auth in Swagger UI
   - Estimate: 1h
   - Dependencies: API setup
+  - Subtasks:
+    - [completed] Add Scalar.AspNetCore package to API
+    - [completed] Configure OpenApi security scheme (JWT)
+    - [completed] Enable Scalar UI in Program.cs
 
 - [ ] **Create Docker configuration**
   - Details: Dockerfile for API, docker-compose for local dev

@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using SpendBear.Infrastructure.Core.Extensions;
 using Identity.Infrastructure.Data;
 using Serilog;
+using Scalar.AspNetCore;
+using Microsoft.OpenApi;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -30,7 +32,27 @@ try
             options.Audience = builder.Configuration["Auth0:Audience"]; // e.g., "https://spendbear.api"
         });
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-    builder.Services.AddOpenApi();
+    builder.Services.AddOpenApi(options =>
+    {
+        options.AddDocumentTransformer((document, context, cancellationToken) =>
+        {
+            document.Components ??= new();
+            document.Components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
+            {
+                Type = SecuritySchemeType.Http,
+                Scheme = "bearer",
+                BearerFormat = "JWT",
+                Description = "Input your Bearer token to access this API"
+            });
+
+            // Check if Security property exists
+            // var sec = document.Security;
+            
+            return Task.CompletedTask;
+            
+            return Task.CompletedTask;
+        });
+    });
     builder.Services.AddPostgreSqlContext<IdentityDbContext>(builder.Configuration);
 
     var app = builder.Build();
@@ -39,6 +61,7 @@ try
     if (app.Environment.IsDevelopment())
     {
         app.MapOpenApi();
+        app.MapScalarApiReference();
     }
 
     app.UseHttpsRedirection();
