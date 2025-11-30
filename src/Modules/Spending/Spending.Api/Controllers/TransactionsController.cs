@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Spending.Application.Features.Transactions.CreateTransaction;
+using Spending.Application.Features.Transactions.UpdateTransaction;
+using Spending.Application.Features.Transactions.DeleteTransaction;
 using Spending.Application.Features.Transactions.GetTransactions;
 using Spending.Domain.Entities;
 using System.Security.Claims;
@@ -13,13 +15,19 @@ namespace Spending.Api.Controllers;
 public class TransactionsController : ControllerBase
 {
     private readonly CreateTransactionHandler _createTransactionHandler;
+    private readonly UpdateTransactionHandler _updateTransactionHandler;
+    private readonly DeleteTransactionHandler _deleteTransactionHandler;
     private readonly GetTransactionsHandler _getTransactionsHandler;
 
     public TransactionsController(
         CreateTransactionHandler createTransactionHandler,
+        UpdateTransactionHandler updateTransactionHandler,
+        DeleteTransactionHandler deleteTransactionHandler,
         GetTransactionsHandler getTransactionsHandler)
     {
         _createTransactionHandler = createTransactionHandler;
+        _updateTransactionHandler = updateTransactionHandler;
+        _deleteTransactionHandler = deleteTransactionHandler;
         _getTransactionsHandler = getTransactionsHandler;
     }
 
@@ -88,9 +96,64 @@ public class TransactionsController : ControllerBase
 
         return Ok(result.Value);
     }
+
+    [HttpPut("{id}")]
+    public async Task<IActionResult> UpdateTransaction(Guid id, [FromBody] UpdateTransactionRequest request)
+    {
+        var userIdClaim = User.FindFirst("user_id")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { Error = "User ID not found in token" });
+
+        var command = new UpdateTransactionCommand(
+            id,
+            request.Amount,
+            request.Currency,
+            request.Date,
+            request.Description,
+            request.CategoryId,
+            request.Type
+        );
+
+        // Validate
+        var validationResult = UpdateTransactionValidator.Validate(command);
+        if (validationResult.IsFailure)
+            return BadRequest(validationResult.Error);
+
+        var result = await _updateTransactionHandler.Handle(command, userId);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return Ok(result.Value);
+    }
+
+    [HttpDelete("{id}")]
+    public async Task<IActionResult> DeleteTransaction(Guid id)
+    {
+        var userIdClaim = User.FindFirst("user_id")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { Error = "User ID not found in token" });
+
+        var command = new DeleteTransactionCommand(id);
+        var result = await _deleteTransactionHandler.Handle(command, userId);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return NoContent();
+    }
 }
 
 public record CreateTransactionRequest(
+    decimal Amount,
+    string Currency,
+    DateTime Date,
+    string Description,
+    Guid CategoryId,
+    TransactionType Type
+);
+
+public record UpdateTransactionRequest(
     decimal Amount,
     string Currency,
     DateTime Date,

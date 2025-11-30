@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Spending.Application.Features.Categories.CreateCategory;
+using Spending.Application.Features.Categories.GetCategories;
 using System.Security.Claims;
 
 namespace Spending.Api.Controllers;
@@ -11,10 +12,14 @@ namespace Spending.Api.Controllers;
 public class CategoriesController : ControllerBase
 {
     private readonly CreateCategoryHandler _createCategoryHandler;
+    private readonly GetCategoriesHandler _getCategoriesHandler;
 
-    public CategoriesController(CreateCategoryHandler createCategoryHandler)
+    public CategoriesController(
+        CreateCategoryHandler createCategoryHandler,
+        GetCategoriesHandler getCategoriesHandler)
     {
         _createCategoryHandler = createCategoryHandler;
+        _getCategoriesHandler = getCategoriesHandler;
     }
 
     [HttpPost]
@@ -41,6 +46,22 @@ public class CategoriesController : ControllerBase
             new { id = result.Value.Id },
             result.Value
         );
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetCategories()
+    {
+        var userIdClaim = User.FindFirst("user_id")?.Value;
+        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+            return Unauthorized(new { Error = "User ID not found in token" });
+
+        var query = new GetCategoriesQuery();
+        var result = await _getCategoriesHandler.Handle(query, userId);
+
+        if (result.IsFailure)
+            return BadRequest(result.Error);
+
+        return Ok(result.Value);
     }
 }
 

@@ -104,7 +104,7 @@
 
 ## Backlog (Prioritized)
 
-### Spending Module (Core)
+### Spending Module (Core) - COMPLETED ✅
 - [x] Create Transaction aggregate (3h) - Completed: 2025-11-30
 - [x] Implement Money value object (2h) - Completed: 2025-11-30
 - [x] Create Category entity (2h) - Completed: 2025-11-30
@@ -115,9 +115,9 @@
 - [x] Create spending module migrations (1h) - Completed: 2025-11-30
 - [x] Add transaction validation rules (2h) - Completed: 2025-11-30
 - [x] Create Spending API controllers (2h) - Completed: 2025-11-30
-- [ ] Implement UpdateTransaction feature (3h)
-- [ ] Implement DeleteTransaction feature (2h)
-- [ ] Implement GetCategories query (2h)
+- [x] Implement UpdateTransaction feature (3h) - Completed: 2025-11-30
+- [x] Implement DeleteTransaction feature (2h) - Completed: 2025-11-30
+- [x] Implement GetCategories query (2h) - Completed: 2025-11-30
 
 ### Budgets Module (Reactive)
 - [ ] Create Budget aggregate (3h)
@@ -197,7 +197,8 @@
   - Created IRepository<T> interface for aggregates
 
 ## Technical Debt
-- [ ] Refactor to use custom mapper instead of manual mapping
+- [ ] Refactor to use mapperly instead of manual mapping
+- [ ] Add comments and verbosity to all code
 - [ ] Optimize database indexes based on query patterns
 - [ ] Implement circuit breaker for external services
 - [ ] Add comprehensive API versioning strategy
