@@ -13,6 +13,8 @@ public static class DependencyInjection
         // No MediatR as per project guidelines.
         // Handlers will be registered directly where needed.
         services.AddScoped<IEventHandler<TransactionCreatedEvent>, TransactionCreatedEventHandler>();
+        services.AddScoped<IEventHandler<TransactionUpdatedEvent>, TransactionUpdatedEventHandler>();
+        services.AddScoped<IEventHandler<TransactionDeletedEvent>, TransactionDeletedEventHandler>();
 
         return services;
     }
