@@ -3,11 +3,12 @@ using Analytics.Domain.Repositories;
 using SpendBear.SharedKernel;
 using Analytics.Domain.Enums;
 using Spending.Domain.Events;
-using Spending.Domain.Entities; // Corrected this from Spending.Domain.Enums
+using Spending.Domain.Entities;
+using SpendBear.SharedKernel; // Added for IEventHandler
 
 namespace Analytics.Application.Features.EventHandlers;
 
-public sealed class TransactionCreatedEventHandler
+public sealed class TransactionCreatedEventHandler : IEventHandler<TransactionCreatedEvent>
 {
     private readonly IAnalyticSnapshotRepository _analyticSnapshotRepository;
     private readonly IUnitOfWork _unitOfWork;
