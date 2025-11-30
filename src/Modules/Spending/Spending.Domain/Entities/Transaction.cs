@@ -1,4 +1,5 @@
 using SpendBear.SharedKernel;
+using Spending.Domain.Events;
 using Spending.Domain.ValueObjects;
 
 namespace Spending.Domain.Entities;
@@ -26,18 +27,31 @@ public class Transaction : AggregateRoot
 
     public static Result<Transaction> Create(Money amount, DateTime date, string description, Guid categoryId, Guid userId, TransactionType type)
     {
-        if (amount == null) 
+        if (amount == null)
             return Result.Failure<Transaction>(new Error("Transaction.InvalidAmount", "Amount is required"));
-            
-        if (userId == Guid.Empty) 
+
+        if (userId == Guid.Empty)
             return Result.Failure<Transaction>(new Error("Transaction.InvalidUser", "UserId is required"));
-            
-        if (categoryId == Guid.Empty) 
+
+        if (categoryId == Guid.Empty)
             return Result.Failure<Transaction>(new Error("Transaction.InvalidCategory", "CategoryId is required"));
 
-        return Result.Success(new Transaction(amount, date, description, categoryId, userId, type));
+        var transaction = new Transaction(amount, date, description, categoryId, userId, type);
+
+        // Raise domain event
+        transaction.RaiseDomainEvent(new TransactionCreatedEvent(
+            transaction.Id,
+            userId,
+            amount.Amount,
+            amount.Currency,
+            type,
+            categoryId,
+            date
+        ));
+
+        return Result.Success(transaction);
     }
-    
+
     public void Update(Money amount, DateTime date, string description, Guid categoryId, TransactionType type)
     {
         Amount = amount;
@@ -45,5 +59,25 @@ public class Transaction : AggregateRoot
         Description = description;
         CategoryId = categoryId;
         Type = type;
+
+        // Raise domain event
+        RaiseDomainEvent(new TransactionUpdatedEvent(
+            Id,
+            UserId,
+            amount.Amount,
+            amount.Currency,
+            type,
+            categoryId,
+            date
+        ));
+    }
+
+    public void Delete()
+    {
+        // Raise domain event
+        RaiseDomainEvent(new TransactionDeletedEvent(
+            Id,
+            UserId
+        ));
     }
 }

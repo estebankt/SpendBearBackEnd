@@ -3,6 +3,8 @@ using SpendBear.Infrastructure.Core.Extensions;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Extensions;
 using Identity.Application.Extensions;
+using Spending.Infrastructure.Extensions;
+using Spending.Application.Extensions;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.OpenApi;
@@ -62,6 +64,10 @@ try
     builder.Services.AddPostgreSqlContext<IdentityDbContext>(builder.Configuration);
     builder.Services.AddIdentityInfrastructure();
     builder.Services.AddIdentityApplication();
+
+    // Spending Module
+    builder.Services.AddSpendingInfrastructure(builder.Configuration);
+    builder.Services.AddSpendingApplication();
 
     var app = builder.Build();
 

@@ -105,16 +105,19 @@
 ## Backlog (Prioritized)
 
 ### Spending Module (Core)
-- [x] Create Transaction aggregate (3h)
-- [x] Implement Money value object (2h)
-- [x] Create Category entity (2h)
-- [in_progress] Implement CreateTransaction feature (4h)
+- [x] Create Transaction aggregate (3h) - Completed: 2025-11-30
+- [x] Implement Money value object (2h) - Completed: 2025-11-30
+- [x] Create Category entity (2h) - Completed: 2025-11-30
+- [x] Implement CreateTransaction feature (4h) - Completed: 2025-11-30
+- [x] Implement CreateCategory feature (3h) - Completed: 2025-11-30
+- [x] Create GetTransactions query with filtering (3h) - Completed: 2025-11-30
+- [x] Setup transaction domain events (2h) - Completed: 2025-11-30
+- [x] Create spending module migrations (1h) - Completed: 2025-11-30
+- [x] Add transaction validation rules (2h) - Completed: 2025-11-30
+- [x] Create Spending API controllers (2h) - Completed: 2025-11-30
 - [ ] Implement UpdateTransaction feature (3h)
 - [ ] Implement DeleteTransaction feature (2h)
-- [ ] Create GetTransactions query with filtering (3h)
-- [ ] Setup transaction event publishers (2h)
-- [ ] Create spending module migrations (1h)
-- [ ] Add transaction validation rules (2h)
+- [ ] Implement GetCategories query (2h)
 
 ### Budgets Module (Reactive)
 - [ ] Create Budget aggregate (3h)
