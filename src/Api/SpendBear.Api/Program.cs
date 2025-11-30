@@ -7,6 +7,8 @@ using Spending.Infrastructure.Extensions;
 using Spending.Application.Extensions;
 using Budgets.Infrastructure;
 using Budgets.Application;
+using Notifications.Infrastructure;
+using Notifications.Application;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.OpenApi;
@@ -46,12 +48,12 @@ try
             {
                 document.Components = new();
             }
-            
+
             if (document.Components.SecuritySchemes == null)
             {
                 document.Components.SecuritySchemes = new Dictionary<string, IOpenApiSecurityScheme>();
             }
-            
+
             document.Components.SecuritySchemes.Add("Bearer", new OpenApiSecurityScheme
             {
                 Type = SecuritySchemeType.Http,
@@ -67,13 +69,30 @@ try
     builder.Services.AddIdentityInfrastructure();
     builder.Services.AddIdentityApplication();
 
+    builder.Services.AddCors(options =>
+  {
+      options.AddPolicy("AllowFrontend",
+          policy =>
+          {
+              policy.WithOrigins("http://localhost:3000")
+                    .AllowAnyHeader()
+                    .AllowAnyMethod()
+                    .AllowCredentials();
+          });
+  });
+
     // Spending Module
     builder.Services.AddSpendingInfrastructure(builder.Configuration);
     builder.Services.AddSpendingApplication();
 
+
     // Budgets Module
     builder.Services.AddBudgetsInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
     builder.Services.AddBudgetsApplication();
+
+    // Notifications Module
+    builder.Services.AddNotificationsInfrastructure(builder.Configuration);
+    builder.Services.AddNotificationsApplication();
 
     var app = builder.Build();
 
@@ -82,9 +101,13 @@ try
     {
         app.MapOpenApi();
         app.MapScalarApiReference();
+        app.MapGet("/", () => Results.Redirect("/scalar"));
     }
 
+
+
     app.UseHttpsRedirection();
+    app.UseCors("AllowFrontend");
 
     app.UseAuthentication();
     app.UseAuthorization();

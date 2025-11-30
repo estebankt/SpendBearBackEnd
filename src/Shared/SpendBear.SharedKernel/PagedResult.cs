@@ -1,4 +1,4 @@
-namespace Spending.Application.Features.Transactions.GetTransactions;
+namespace SpendBear.SharedKernel;
 
 public sealed class PagedResult<T>
 {
