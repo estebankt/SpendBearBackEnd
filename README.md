@@ -41,7 +41,7 @@ Visit https://localhost:7001/swagger to explore the API.
 ## Tech Stack
 
 ### Backend
-- **.NET 8** with ASP.NET Core Web API
+- **.NET 10** with ASP.NET Core Web API
 - **PostgreSQL** (Neon) with Entity Framework Core
 - **Redis** for caching
 - **Kafka** for event streaming
@@ -119,7 +119,7 @@ SpendBear/
 ## Development
 
 ### Prerequisites
-- .NET 8 SDK
+- .NET 10 SDK
 - Node.js 18+
 - Docker Desktop
 - PostgreSQL client
