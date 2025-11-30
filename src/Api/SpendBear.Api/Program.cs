@@ -33,7 +33,12 @@ try
 
     // Add services to the container.
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers()
+        .AddApplicationPart(typeof(Spending.Api.Controllers.TransactionsController).Assembly)
+        .AddApplicationPart(typeof(Budgets.Api.Controllers.BudgetsController).Assembly)
+        .AddApplicationPart(typeof(Identity.Api.Controllers.IdentityController).Assembly)
+        .AddApplicationPart(typeof(Notifications.Api.Controllers.NotificationsController).Assembly)
+        .AddApplicationPart(typeof(Analytics.Api.Controllers.AnalyticsController).Assembly);
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>

@@ -15,6 +15,8 @@ public static class DependencyInjection
         services.AddScoped<IEventHandler<TransactionCreatedEvent>, TransactionCreatedEventHandler>();
         services.AddScoped<IEventHandler<TransactionUpdatedEvent>, TransactionUpdatedEventHandler>();
         services.AddScoped<IEventHandler<TransactionDeletedEvent>, TransactionDeletedEventHandler>();
+        
+        services.AddScoped<Features.Queries.GetMonthlySummary.GetMonthlySummaryHandler>();
 
         return services;
     }
