@@ -32,6 +32,9 @@
     <ProjectReference Include="..\..\Modules\Spending\Spending.Infrastructure\Spending.Infrastructure.csproj" />
     <ProjectReference Include="..\..\Modules\Spending\Spending.Application\Spending.Application.csproj" />
     <ProjectReference Include="..\..\Modules\Spending\Spending.Api\Spending.Api.csproj" />
+    <ProjectReference Include="..\..\Modules\Budgets\Budgets.Infrastructure\Budgets.Infrastructure.csproj" />
+    <ProjectReference Include="..\..\Modules\Budgets\Budgets.Application\Budgets.Application.csproj" />
+    <ProjectReference Include="..\..\Modules\Budgets\Budgets.Api\Budgets.Api.csproj" />
   </ItemGroup>
 
 </Project>

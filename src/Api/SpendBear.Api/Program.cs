@@ -5,6 +5,8 @@ using Identity.Infrastructure.Extensions;
 using Identity.Application.Extensions;
 using Spending.Infrastructure.Extensions;
 using Spending.Application.Extensions;
+using Budgets.Infrastructure;
+using Budgets.Application;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.OpenApi;
@@ -68,6 +70,10 @@ try
     // Spending Module
     builder.Services.AddSpendingInfrastructure(builder.Configuration);
     builder.Services.AddSpendingApplication();
+
+    // Budgets Module
+    builder.Services.AddBudgetsInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
+    builder.Services.AddBudgetsApplication();
 
     var app = builder.Build();
 
