@@ -9,6 +9,8 @@ using Budgets.Infrastructure;
 using Budgets.Application;
 using Notifications.Infrastructure;
 using Notifications.Application;
+using Analytics.Infrastructure;
+using Analytics.Application;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.OpenApi;
@@ -93,6 +95,10 @@ try
     // Notifications Module
     builder.Services.AddNotificationsInfrastructure(builder.Configuration);
     builder.Services.AddNotificationsApplication();
+
+    // Analytics Module
+    builder.Services.AddAnalyticsInfrastructure(builder.Configuration);
+    builder.Services.AddAnalyticsApplication();
 
     var app = builder.Build();
 
