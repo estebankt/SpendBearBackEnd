@@ -120,6 +120,12 @@ try
     app.UseHttpsRedirection();
     app.UseCors("AllowFrontend");
 
+    // Development-only: Add test user when no auth token present
+    if (app.Environment.IsDevelopment())
+    {
+        app.UseMiddleware<SpendBear.Api.Middleware.DevelopmentAuthMiddleware>();
+    }
+
     app.UseAuthentication();
     app.UseAuthorization();
 

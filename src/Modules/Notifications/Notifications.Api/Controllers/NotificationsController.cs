@@ -1,3 +1,4 @@
+using SpendBear.SharedKernel.Extensions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Notifications.Application.Features.Commands.MarkNotificationAsRead;
@@ -32,12 +33,12 @@ public sealed class NotificationsController : ControllerBase
         [FromQuery] int pageSize = 50,
         CancellationToken cancellationToken = default)
     {
-        var userId = GetUserIdFromClaims();
-        if (userId == Guid.Empty)
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized();
 
         var query = new GetNotificationsQuery(
-            userId,
+            userId.Value,
             status,
             type,
             unreadOnly,
@@ -57,11 +58,11 @@ public sealed class NotificationsController : ControllerBase
         Guid id,
         CancellationToken cancellationToken = default)
     {
-        var userId = GetUserIdFromClaims();
-        if (userId == Guid.Empty)
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized();
 
-        var command = new MarkNotificationAsReadCommand(id, userId);
+        var command = new MarkNotificationAsReadCommand(id, userId.Value);
         var result = await _markAsReadHandler.Handle(command, cancellationToken);
 
         if (result.IsFailure)
@@ -76,14 +77,5 @@ public sealed class NotificationsController : ControllerBase
         }
 
         return NoContent();
-    }
-
-    private Guid GetUserIdFromClaims()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value
-            ?? User.FindFirst("sub")?.Value
-            ?? User.FindFirst("user_id")?.Value;
-
-        return Guid.TryParse(userIdClaim, out var userId) ? userId : Guid.Empty;
     }
 }

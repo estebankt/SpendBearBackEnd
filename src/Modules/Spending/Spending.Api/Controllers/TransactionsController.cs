@@ -6,6 +6,7 @@ using Spending.Application.Features.Transactions.DeleteTransaction;
 using Spending.Application.Features.Transactions.GetTransactions;
 using Spending.Domain.Entities;
 using System.Security.Claims;
+using SpendBear.SharedKernel.Extensions;
 
 namespace Spending.Api.Controllers;
 
@@ -34,8 +35,8 @@ public class TransactionsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionRequest request)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var command = new CreateTransactionCommand(
@@ -52,7 +53,7 @@ public class TransactionsController : ControllerBase
         if (validationResult.IsFailure)
             return BadRequest(validationResult.Error);
 
-        var result = await _createTransactionHandler.Handle(command, userId);
+        var result = await _createTransactionHandler.Handle(command, userId.Value);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -73,8 +74,8 @@ public class TransactionsController : ControllerBase
         [FromQuery] int pageNumber = 1,
         [FromQuery] int pageSize = 50)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         if (pageNumber < 1) pageNumber = 1;
@@ -89,7 +90,7 @@ public class TransactionsController : ControllerBase
             pageSize
         );
 
-        var result = await _getTransactionsHandler.Handle(query, userId);
+        var result = await _getTransactionsHandler.Handle(query, userId.Value);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -100,8 +101,8 @@ public class TransactionsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTransaction(Guid id, [FromBody] UpdateTransactionRequest request)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var command = new UpdateTransactionCommand(
@@ -119,7 +120,7 @@ public class TransactionsController : ControllerBase
         if (validationResult.IsFailure)
             return BadRequest(validationResult.Error);
 
-        var result = await _updateTransactionHandler.Handle(command, userId);
+        var result = await _updateTransactionHandler.Handle(command, userId.Value);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -130,12 +131,12 @@ public class TransactionsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTransaction(Guid id)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var command = new DeleteTransactionCommand(id);
-        var result = await _deleteTransactionHandler.Handle(command, userId);
+        var result = await _deleteTransactionHandler.Handle(command, userId.Value);
 
         if (result.IsFailure)
             return BadRequest(result.Error);

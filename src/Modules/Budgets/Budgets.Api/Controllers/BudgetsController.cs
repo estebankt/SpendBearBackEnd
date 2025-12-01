@@ -1,3 +1,4 @@
+using SpendBear.SharedKernel.Extensions;
 using Budgets.Api.Models;
 using Budgets.Application.Features.Budgets.CreateBudget;
 using Budgets.Application.Features.Budgets.DeleteBudget;
@@ -33,8 +34,8 @@ public sealed class BudgetsController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateBudget([FromBody] CreateBudgetRequest request)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var command = new CreateBudgetCommand(
@@ -51,7 +52,7 @@ public sealed class BudgetsController : ControllerBase
         if (validationResult.IsFailure)
             return BadRequest(validationResult.Error);
 
-        var result = await _createBudgetHandler.Handle(command, userId);
+        var result = await _createBudgetHandler.Handle(command, userId.Value);
 
         return result.IsSuccess
             ? CreatedAtAction(nameof(GetBudgets), new { id = result.Value.Id }, result.Value)
@@ -64,12 +65,12 @@ public sealed class BudgetsController : ControllerBase
         [FromQuery] Guid? categoryId = null,
         [FromQuery] DateTime? date = null)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var query = new GetBudgetsQuery(activeOnly, categoryId, date);
-        var result = await _getBudgetsHandler.Handle(query, userId);
+        var result = await _getBudgetsHandler.Handle(query, userId.Value);
 
         return result.IsSuccess
             ? Ok(result.Value)
@@ -79,8 +80,8 @@ public sealed class BudgetsController : ControllerBase
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateBudget(Guid id, [FromBody] UpdateBudgetRequest request)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var command = new UpdateBudgetCommand(
@@ -93,7 +94,7 @@ public sealed class BudgetsController : ControllerBase
             request.WarningThreshold
         );
 
-        var result = await _updateBudgetHandler.Handle(command, userId);
+        var result = await _updateBudgetHandler.Handle(command, userId.Value);
 
         return result.IsSuccess
             ? Ok(result.Value)
@@ -103,12 +104,12 @@ public sealed class BudgetsController : ControllerBase
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteBudget(Guid id)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var command = new DeleteBudgetCommand(id);
-        var result = await _deleteBudgetHandler.Handle(command, userId);
+        var result = await _deleteBudgetHandler.Handle(command, userId.Value);
 
         return result.IsSuccess
             ? NoContent()

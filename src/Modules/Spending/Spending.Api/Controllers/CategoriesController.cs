@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Spending.Application.Features.Categories.CreateCategory;
 using Spending.Application.Features.Categories.GetCategories;
 using System.Security.Claims;
+using SpendBear.SharedKernel.Extensions;
 
 namespace Spending.Api.Controllers;
 
@@ -25,8 +26,8 @@ public class CategoriesController : ControllerBase
     [HttpPost]
     public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest request)
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var command = new CreateCategoryCommand(request.Name, request.Description);
@@ -36,7 +37,7 @@ public class CategoriesController : ControllerBase
         if (validationResult.IsFailure)
             return BadRequest(validationResult.Error);
 
-        var result = await _createCategoryHandler.Handle(command, userId);
+        var result = await _createCategoryHandler.Handle(command, userId.Value);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
@@ -51,12 +52,12 @@ public class CategoriesController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetCategories()
     {
-        var userIdClaim = User.FindFirst("user_id")?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
+        var userId = User.GetUserId();
+        if (userId == null)
             return Unauthorized(new { Error = "User ID not found in token" });
 
         var query = new GetCategoriesQuery();
-        var result = await _getCategoriesHandler.Handle(query, userId);
+        var result = await _getCategoriesHandler.Handle(query, userId.Value);
 
         if (result.IsFailure)
             return BadRequest(result.Error);
