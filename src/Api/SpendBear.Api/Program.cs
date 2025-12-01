@@ -15,6 +15,8 @@ using Analytics.Application;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.OpenApi;
+using SpendBear.SharedKernel;
+using SpendBear.Infrastructure.Core.Events;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -91,6 +93,10 @@ try
                     .AllowCredentials();
           });
   });
+
+    // Infrastructure Core
+    builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
+
 
     // Spending Module
     builder.Services.AddSpendingInfrastructure(builder.Configuration);
