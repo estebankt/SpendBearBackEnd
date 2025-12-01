@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using SpendBear.Infrastructure.Core;
 using SpendBear.Infrastructure.Core.Extensions;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Extensions;
@@ -72,6 +73,9 @@ try
             return Task.CompletedTask;
         });
     });
+    // Infrastructure Core (Event Dispatcher, etc.)
+    builder.Services.AddInfrastructureCore();
+
     builder.Services.AddPostgreSqlContext<IdentityDbContext>(builder.Configuration);
     builder.Services.AddIdentityInfrastructure();
     builder.Services.AddIdentityApplication();
