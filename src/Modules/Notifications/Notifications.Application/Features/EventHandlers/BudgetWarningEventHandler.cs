@@ -6,7 +6,7 @@ using SpendBear.SharedKernel;
 
 namespace Notifications.Application.Features.EventHandlers;
 
-public sealed class BudgetWarningEventHandler
+public sealed class BudgetWarningEventHandler : IEventHandler<BudgetWarningEvent>
 {
     private readonly INotificationRepository _notificationRepository;
     private readonly IEmailService _emailService;
