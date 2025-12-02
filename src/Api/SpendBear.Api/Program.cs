@@ -72,6 +72,13 @@ try
                 Description = "Input your Bearer token to access this API"
             });
 
+            document.Info = new()
+            {
+                Title = "SpendBear API",
+                Version = "v1",
+                Description = "Personal finance management API for tracking transactions, budgets, and analytics"
+            };
+
             return Task.CompletedTask;
         });
     });

@@ -8,6 +8,9 @@ using System.Security.Claims;
 
 namespace Analytics.Api.Controllers;
 
+/// <summary>
+/// Financial analytics and reporting
+/// </summary>
 [ApiController]
 [Route("api/analytics")]
 [Authorize]
@@ -20,6 +23,16 @@ public class AnalyticsController : ControllerBase
         _getMonthlySummaryHandler = getMonthlySummaryHandler;
     }
 
+    /// <summary>
+    /// Get monthly financial summary including income, expenses, and spending by category
+    /// </summary>
+    /// <param name="year">Year for the summary (2000-2100)</param>
+    /// <param name="month">Month for the summary (1-12)</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Monthly summary with total income, expenses, net balance, and category breakdowns</returns>
+    /// <response code="200">Monthly summary retrieved successfully</response>
+    /// <response code="400">Invalid year or month parameters</response>
+    /// <response code="401">Missing or invalid authentication token</response>
     [HttpGet("summary/monthly")]
     [ProducesResponseType(typeof(MonthlySummaryDto), StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]

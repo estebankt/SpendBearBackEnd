@@ -4,7 +4,6 @@ using SpendBear.SharedKernel;
 using Analytics.Domain.Enums;
 using Spending.Domain.Events;
 using Spending.Domain.Entities;
-using SpendBear.SharedKernel; // Added for IEventHandler
 
 namespace Analytics.Application.Features.EventHandlers;
 

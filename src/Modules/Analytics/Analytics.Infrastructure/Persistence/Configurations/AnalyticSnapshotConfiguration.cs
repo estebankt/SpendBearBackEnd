@@ -37,15 +37,17 @@ public class AnalyticSnapshotConfiguration : IEntityTypeConfiguration<AnalyticSn
         builder.Property(s => s.SpendingByCategory)
             .HasColumnType("jsonb") // Store dictionary as JSONB
             .HasConversion(
-                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
-                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, decimal>>(v, (System.Text.Json.JsonSerializerOptions)null)
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, decimal>>(v, (System.Text.Json.JsonSerializerOptions?)null)
+                     ?? new Dictionary<Guid, decimal>()
             );
-        
+
         builder.Property(s => s.IncomeByCategory)
             .HasColumnType("jsonb") // Store dictionary as JSONB
             .HasConversion(
-                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions)null),
-                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, decimal>>(v, (System.Text.Json.JsonSerializerOptions)null)
+                v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
+                v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, decimal>>(v, (System.Text.Json.JsonSerializerOptions?)null)
+                     ?? new Dictionary<Guid, decimal>()
             );
 
         // Ensure unique constraint for UserId, SnapshotDate, and Period to prevent duplicate snapshots

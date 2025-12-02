@@ -10,6 +10,9 @@ using SpendBear.SharedKernel.Extensions;
 
 namespace Spending.Api.Controllers;
 
+/// <summary>
+/// Financial transaction management (income and expenses)
+/// </summary>
 [ApiController]
 [Route("api/spending/transactions")]
 [Authorize]
@@ -32,6 +35,14 @@ public class TransactionsController : ControllerBase
         _getTransactionsHandler = getTransactionsHandler;
     }
 
+    /// <summary>
+    /// Create a new financial transaction (income or expense)
+    /// </summary>
+    /// <param name="request">Transaction details including amount, date, category, and type</param>
+    /// <returns>The newly created transaction</returns>
+    /// <response code="201">Transaction created successfully</response>
+    /// <response code="400">Invalid transaction data</response>
+    /// <response code="401">Missing or invalid authentication token</response>
     [HttpPost]
     public async Task<IActionResult> CreateTransaction([FromBody] CreateTransactionRequest request)
     {
@@ -65,6 +76,19 @@ public class TransactionsController : ControllerBase
         );
     }
 
+    /// <summary>
+    /// Get transactions with optional filtering and pagination
+    /// </summary>
+    /// <param name="startDate">Filter by transactions on or after this date</param>
+    /// <param name="endDate">Filter by transactions on or before this date</param>
+    /// <param name="categoryId">Filter by specific category</param>
+    /// <param name="type">Filter by transaction type (Income or Expense)</param>
+    /// <param name="pageNumber">Page number for pagination (default: 1)</param>
+    /// <param name="pageSize">Number of items per page (default: 50, max: 100)</param>
+    /// <returns>Paginated list of transactions</returns>
+    /// <response code="200">Transactions retrieved successfully</response>
+    /// <response code="400">Invalid query parameters</response>
+    /// <response code="401">Missing or invalid authentication token</response>
     [HttpGet]
     public async Task<IActionResult> GetTransactions(
         [FromQuery] DateTime? startDate = null,
@@ -98,6 +122,15 @@ public class TransactionsController : ControllerBase
         return Ok(result.Value);
     }
 
+    /// <summary>
+    /// Update an existing transaction
+    /// </summary>
+    /// <param name="id">Transaction ID</param>
+    /// <param name="request">Updated transaction details</param>
+    /// <returns>The updated transaction</returns>
+    /// <response code="200">Transaction updated successfully</response>
+    /// <response code="400">Invalid transaction data or transaction not found</response>
+    /// <response code="401">Missing or invalid authentication token</response>
     [HttpPut("{id}")]
     public async Task<IActionResult> UpdateTransaction(Guid id, [FromBody] UpdateTransactionRequest request)
     {
@@ -128,6 +161,14 @@ public class TransactionsController : ControllerBase
         return Ok(result.Value);
     }
 
+    /// <summary>
+    /// Delete a transaction
+    /// </summary>
+    /// <param name="id">Transaction ID to delete</param>
+    /// <returns>No content on success</returns>
+    /// <response code="204">Transaction deleted successfully</response>
+    /// <response code="400">Transaction not found or cannot be deleted</response>
+    /// <response code="401">Missing or invalid authentication token</response>
     [HttpDelete("{id}")]
     public async Task<IActionResult> DeleteTransaction(Guid id)
     {
@@ -145,6 +186,15 @@ public class TransactionsController : ControllerBase
     }
 }
 
+/// <summary>
+/// Request to create a new transaction
+/// </summary>
+/// <param name="Amount">Transaction amount (positive for income, positive for expense)</param>
+/// <param name="Currency">Currency code (e.g., USD, EUR)</param>
+/// <param name="Date">Transaction date</param>
+/// <param name="Description">Transaction description</param>
+/// <param name="CategoryId">Category ID this transaction belongs to</param>
+/// <param name="Type">Transaction type (Income or Expense)</param>
 public record CreateTransactionRequest(
     decimal Amount,
     string Currency,
@@ -154,6 +204,15 @@ public record CreateTransactionRequest(
     TransactionType Type
 );
 
+/// <summary>
+/// Request to update an existing transaction
+/// </summary>
+/// <param name="Amount">Updated transaction amount</param>
+/// <param name="Currency">Updated currency code</param>
+/// <param name="Date">Updated transaction date</param>
+/// <param name="Description">Updated description</param>
+/// <param name="CategoryId">Updated category ID</param>
+/// <param name="Type">Updated transaction type</param>
 public record UpdateTransactionRequest(
     decimal Amount,
     string Currency,

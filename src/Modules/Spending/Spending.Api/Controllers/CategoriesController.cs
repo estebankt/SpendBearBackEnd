@@ -7,6 +7,9 @@ using SpendBear.SharedKernel.Extensions;
 
 namespace Spending.Api.Controllers;
 
+/// <summary>
+/// Transaction category management
+/// </summary>
 [ApiController]
 [Route("api/spending/categories")]
 [Authorize]
@@ -23,6 +26,14 @@ public class CategoriesController : ControllerBase
         _getCategoriesHandler = getCategoriesHandler;
     }
 
+    /// <summary>
+    /// Create a new transaction category
+    /// </summary>
+    /// <param name="request">Category details including name and optional description</param>
+    /// <returns>The newly created category</returns>
+    /// <response code="201">Category created successfully</response>
+    /// <response code="400">Invalid category data or category name already exists</response>
+    /// <response code="401">Missing or invalid authentication token</response>
     [HttpPost]
     public async Task<IActionResult> CreateCategory([FromBody] CreateCategoryRequest request)
     {
@@ -49,6 +60,12 @@ public class CategoriesController : ControllerBase
         );
     }
 
+    /// <summary>
+    /// Get all categories for the authenticated user
+    /// </summary>
+    /// <returns>List of all user's categories</returns>
+    /// <response code="200">Categories retrieved successfully</response>
+    /// <response code="401">Missing or invalid authentication token</response>
     [HttpGet]
     public async Task<IActionResult> GetCategories()
     {
@@ -66,4 +83,9 @@ public class CategoriesController : ControllerBase
     }
 }
 
+/// <summary>
+/// Request to create a new category
+/// </summary>
+/// <param name="Name">Category name (must be unique per user)</param>
+/// <param name="Description">Optional category description</param>
 public record CreateCategoryRequest(string Name, string? Description);
