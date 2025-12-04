@@ -22,11 +22,16 @@ public class CategoryConfiguration : IEntityTypeConfiguration<Category>
         builder.Property(c => c.UserId)
             .IsRequired();
 
+        builder.Property(c => c.IsSystemCategory)
+            .IsRequired()
+            .HasDefaultValue(false);
+
         // Index for user queries
         builder.HasIndex(c => c.UserId);
 
-        // Unique constraint: user can't have duplicate category names
-        builder.HasIndex(c => new { c.UserId, c.Name })
-            .IsUnique();
+        // Note: Partial unique indexes are created in migration via raw SQL
+        // EF Core doesn't support partial indexes declaratively
+        // - User categories: unique per (UserId, Name) where IsSystemCategory = false
+        // - System categories: unique globally by Name where IsSystemCategory = true
     }
 }
