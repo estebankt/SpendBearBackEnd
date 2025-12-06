@@ -1,8 +1,9 @@
 using Budgets.Domain.Repositories;
 using Budgets.Infrastructure.Persistence;
 using Budgets.Infrastructure.Persistence.Repositories;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SpendBear.Infrastructure.Core.Extensions;
 using SpendBear.SharedKernel;
 
 namespace Budgets.Infrastructure;
@@ -11,10 +12,10 @@ public static class DependencyInjection
 {
     public static IServiceCollection AddBudgetsInfrastructure(
         this IServiceCollection services,
-        string connectionString)
+        IConfiguration configuration)
     {
-        services.AddDbContext<BudgetsDbContext>(options =>
-            options.UseNpgsql(connectionString));
+        // Register DbContext with retry logic
+        services.AddPostgreSqlContext<BudgetsDbContext>(configuration);
 
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();

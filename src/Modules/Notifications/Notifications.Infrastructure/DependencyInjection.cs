@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Notifications.Application.Services;
@@ -7,6 +6,7 @@ using Notifications.Infrastructure.Persistence;
 using Notifications.Infrastructure.Persistence.Repositories;
 using Notifications.Infrastructure.Services;
 using SendGrid.Extensions.DependencyInjection;
+using SpendBear.Infrastructure.Core.Extensions;
 using SpendBear.SharedKernel;
 
 namespace Notifications.Infrastructure;
@@ -17,10 +17,10 @@ public static class DependencyInjection
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        services.AddDbContext<NotificationsDbContext>(options =>
-            options.UseNpgsql(
-                configuration.GetConnectionString("DefaultConnection"),
-                b => b.MigrationsHistoryTable("__EFMigrationsHistory", "notifications")));
+        // Register DbContext with retry logic and custom migrations schema
+        services.AddPostgreSqlContext<NotificationsDbContext>(
+            configuration,
+            migrationsHistoryTableSchema: "notifications");
 
         services.AddScoped<INotificationRepository, NotificationRepository>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();

@@ -17,6 +17,7 @@ using Scalar.AspNetCore;
 using Microsoft.OpenApi;
 using SpendBear.SharedKernel;
 using SpendBear.Infrastructure.Core.Events;
+using SpendBear.Api.Middleware;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -111,7 +112,7 @@ try
 
 
     // Budgets Module
-    builder.Services.AddBudgetsInfrastructure(builder.Configuration.GetConnectionString("DefaultConnection")!);
+    builder.Services.AddBudgetsInfrastructure(builder.Configuration);
     builder.Services.AddBudgetsApplication();
 
     // Notifications Module
@@ -123,6 +124,9 @@ try
     builder.Services.AddAnalyticsApplication();
 
     var app = builder.Build();
+
+    // Global exception handler - must be first to catch all exceptions
+    app.UseGlobalExceptionHandler();
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
