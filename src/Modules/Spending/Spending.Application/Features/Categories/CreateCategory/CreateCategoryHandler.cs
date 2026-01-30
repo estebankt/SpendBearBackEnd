@@ -22,6 +22,31 @@ public sealed class CreateCategoryHandler
         Guid userId,
         CancellationToken cancellationToken = default)
     {
+        // Validate that user is not trying to create a category with system category name
+        var isSystemCategory = await _categoryRepository.IsSystemCategoryNameAsync(
+            command.Name,
+            cancellationToken);
+
+        if (isSystemCategory)
+        {
+            return Result.Failure<CategoryDto>(new Error(
+                "CreateCategory.SystemCategoryExists",
+                $"A system category named '{command.Name}' already exists. Please choose a different name."));
+        }
+
+        // Check if user already has a category with this name
+        var existingCategory = await _categoryRepository.GetByNameAsync(
+            command.Name,
+            userId,
+            cancellationToken);
+
+        if (existingCategory != null && !existingCategory.IsSystemCategory)
+        {
+            return Result.Failure<CategoryDto>(new Error(
+                "CreateCategory.DuplicateName",
+                $"You already have a category named '{command.Name}'."));
+        }
+
         // Create Category entity
         var categoryResult = Category.Create(
             command.Name,
@@ -42,7 +67,8 @@ public sealed class CreateCategoryHandler
         var dto = new CategoryDto(
             categoryResult.Value.Id,
             categoryResult.Value.Name,
-            categoryResult.Value.Description
+            categoryResult.Value.Description,
+            categoryResult.Value.IsSystemCategory
         );
 
         return Result.Success(dto);

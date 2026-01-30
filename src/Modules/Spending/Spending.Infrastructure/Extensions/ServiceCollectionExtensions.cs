@@ -1,6 +1,6 @@
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using SpendBear.Infrastructure.Core.Extensions;
 using SpendBear.SharedKernel;
 using Spending.Domain.Repositories;
 using Spending.Infrastructure.Data;
@@ -14,9 +14,8 @@ public static class ServiceCollectionExtensions
         this IServiceCollection services,
         IConfiguration configuration)
     {
-        // Register DbContext
-        services.AddDbContext<SpendingDbContext>(options =>
-            options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
+        // Register DbContext with retry logic
+        services.AddPostgreSqlContext<SpendingDbContext>(configuration);
 
         // Register UnitOfWork
         services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<SpendingDbContext>());

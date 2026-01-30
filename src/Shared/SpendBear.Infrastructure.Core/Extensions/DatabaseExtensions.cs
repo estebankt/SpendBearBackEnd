@@ -12,10 +12,16 @@ public static class DatabaseExtensions
     /// <summary>
     /// Adds PostgreSQL database context with standard configuration.
     /// </summary>
+    /// <param name="services">The service collection.</param>
+    /// <param name="configuration">The configuration.</param>
+    /// <param name="connectionStringName">The connection string name (default: "DefaultConnection").</param>
+    /// <param name="migrationsHistoryTableSchema">Optional schema for migrations history table.</param>
+    /// <returns>The service collection.</returns>
     public static IServiceCollection AddPostgreSqlContext<TContext>(
         this IServiceCollection services,
         IConfiguration configuration,
-        string connectionStringName = "DefaultConnection")
+        string connectionStringName = "DefaultConnection",
+        string? migrationsHistoryTableSchema = null)
         where TContext : DbContext
     {
         var connectionString = configuration.GetConnectionString(connectionStringName)
@@ -31,6 +37,12 @@ public static class DatabaseExtensions
                     errorCodesToAdd: null);
 
                 npgsqlOptions.CommandTimeout(30);
+
+                // Configure migrations history table schema if specified
+                if (!string.IsNullOrEmpty(migrationsHistoryTableSchema))
+                {
+                    npgsqlOptions.MigrationsHistoryTable("__EFMigrationsHistory", migrationsHistoryTableSchema);
+                }
             });
 
             // Enable sensitive data logging in development

@@ -54,13 +54,20 @@ public class Transaction : AggregateRoot
 
     public void Update(Money amount, DateTime date, string description, Guid categoryId, TransactionType type)
     {
+        // Capture old values before updating
+        var oldAmount = Amount.Amount;
+        var oldType = Type;
+        var oldCategoryId = CategoryId;
+        var oldDate = Date;
+
+        // Update properties
         Amount = amount;
         Date = date;
         Description = description;
         CategoryId = categoryId;
         Type = type;
 
-        // Raise domain event
+        // Raise domain event with old and new values
         RaiseDomainEvent(new TransactionUpdatedEvent(
             Id,
             UserId,
@@ -68,16 +75,25 @@ public class Transaction : AggregateRoot
             amount.Currency,
             type,
             categoryId,
-            date
+            date,
+            oldAmount,
+            oldType,
+            oldCategoryId,
+            oldDate
         ));
     }
 
     public void Delete()
     {
-        // Raise domain event
+        // Raise domain event with current values for reversal
         RaiseDomainEvent(new TransactionDeletedEvent(
             Id,
-            UserId
+            UserId,
+            Amount.Amount,
+            Amount.Currency,
+            Type,
+            CategoryId,
+            Date
         ));
     }
 }

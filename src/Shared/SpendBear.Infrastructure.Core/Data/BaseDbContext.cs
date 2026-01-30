@@ -1,5 +1,8 @@
 using Microsoft.EntityFrameworkCore;
 using SpendBear.SharedKernel;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.EntityFrameworkCore.Infrastructure; // Added this
 
 namespace SpendBear.Infrastructure.Core.Data;
 
@@ -18,6 +21,14 @@ public abstract class BaseDbContext : DbContext, IUnitOfWork
     /// </summary>
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
+        var domainEventDispatcher = ChangeTracker.Context.GetService<IDomainEventDispatcher>();
+        
+        // Ensure the dispatcher is available
+        if (domainEventDispatcher == null)
+        {
+            throw new InvalidOperationException("IDomainEventDispatcher is not registered or cannot be resolved.");
+        }
+
         // Get all aggregate roots with domain events
         var aggregatesWithEvents = ChangeTracker
             .Entries<AggregateRoot>()
@@ -25,17 +36,19 @@ public abstract class BaseDbContext : DbContext, IUnitOfWork
             .Select(e => e.Entity)
             .ToList();
 
-        // Collect all domain events before saving
+        // Save changes to database
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        // Dispatch domain events after successful save
         var domainEvents = aggregatesWithEvents
             .SelectMany(aggregate => aggregate.DomainEvents)
             .ToList();
 
-        // Save changes to database
-        var result = await base.SaveChangesAsync(cancellationToken);
+        foreach (var domainEvent in domainEvents)
+        {
+            await domainEventDispatcher.DispatchAsync(domainEvent, cancellationToken);
+        }
 
-        // Publish domain events after successful save
-        // Note: In a real implementation, you would publish these to an event bus
-        // For now, we just clear them
         foreach (var aggregate in aggregatesWithEvents)
         {
             aggregate.ClearDomainEvents();
