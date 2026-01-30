@@ -3,5 +3,6 @@ namespace Spending.Application.Features.Categories.CreateCategory;
 public sealed record CategoryDto(
     Guid Id,
     string Name,
-    string? Description
+    string? Description,
+    bool IsSystemCategory
 );

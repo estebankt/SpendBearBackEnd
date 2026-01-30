@@ -10,5 +10,9 @@ public sealed record TransactionUpdatedEvent(
     string Currency,
     TransactionType Type,
     Guid CategoryId,
-    DateTime Date
+    DateTime Date,
+    decimal OldAmount,
+    TransactionType OldType,
+    Guid OldCategoryId,
+    DateTime OldDate
 ) : DomainEvent();

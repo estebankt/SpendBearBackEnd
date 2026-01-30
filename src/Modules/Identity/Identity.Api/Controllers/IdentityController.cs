@@ -6,6 +6,9 @@ using System.Security.Claims;
 
 namespace Identity.Api.Controllers;
 
+/// <summary>
+/// Identity and user profile management endpoints
+/// </summary>
 [ApiController]
 [Route("api/identity")]
 public class IdentityController : ControllerBase
@@ -19,6 +22,14 @@ public class IdentityController : ControllerBase
         _getProfileHandler = getProfileHandler;
     }
 
+    /// <summary>
+    /// Register a new user in the system
+    /// </summary>
+    /// <param name="request">User registration details including email and name</param>
+    /// <returns>The newly created user's ID</returns>
+    /// <response code="200">User successfully registered</response>
+    /// <response code="400">Invalid registration data or user already exists</response>
+    /// <response code="401">Missing or invalid authentication token</response>
     [HttpPost("register")]
     [Authorize]
     public async Task<IActionResult> Register([FromBody] RegisterRequest request)
@@ -27,9 +38,9 @@ public class IdentityController : ControllerBase
         if (string.IsNullOrEmpty(auth0Id)) return Unauthorized();
 
         var command = new RegisterUserCommand(auth0Id, request.Email, request.FirstName, request.LastName);
-        
+
         var result = await _registerUserHandler.Handle(command);
-        
+
         if (result.IsFailure)
         {
             return BadRequest(result.Error);
@@ -38,6 +49,13 @@ public class IdentityController : ControllerBase
         return Ok(new { UserId = result.Value });
     }
 
+    /// <summary>
+    /// Get the authenticated user's profile information
+    /// </summary>
+    /// <returns>User profile details</returns>
+    /// <response code="200">Profile retrieved successfully</response>
+    /// <response code="401">Missing or invalid authentication token</response>
+    /// <response code="404">User profile not found</response>
     [HttpGet("me")]
     [Authorize]
     public async Task<IActionResult> GetProfile()
@@ -57,4 +75,10 @@ public class IdentityController : ControllerBase
     }
 }
 
+/// <summary>
+/// User registration request
+/// </summary>
+/// <param name="Email">User's email address</param>
+/// <param name="FirstName">User's first name</param>
+/// <param name="LastName">User's last name</param>
 public record RegisterRequest(string Email, string FirstName, string LastName);

@@ -18,12 +18,13 @@ public sealed class GetCategoriesHandler
         Guid userId,
         CancellationToken cancellationToken = default)
     {
-        var categories = await _categoryRepository.GetByUserIdAsync(userId, cancellationToken);
+        var categories = await _categoryRepository.GetAllAvailableCategoriesForUserAsync(userId, cancellationToken);
 
         var dtos = categories.Select(c => new CategoryDto(
             c.Id,
             c.Name,
-            c.Description
+            c.Description,
+            c.IsSystemCategory
         )).ToList();
 
         return Result.Success(dtos);
