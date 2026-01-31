@@ -23,7 +23,7 @@ public static class DependencyInjection
             migrationsHistoryTableSchema: "notifications");
 
         services.AddScoped<INotificationRepository, NotificationRepository>();
-        services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<Notifications.Application.Abstractions.INotificationsUnitOfWork, UnitOfWork>();
 
         var sendGridApiKey = configuration["SendGrid:ApiKey"];
         if (!string.IsNullOrEmpty(sendGridApiKey))

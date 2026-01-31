@@ -1,3 +1,4 @@
+using Analytics.Application.Abstractions;
 using Analytics.Domain.Entities;
 using Analytics.Domain.Repositories;
 using SpendBear.SharedKernel;
@@ -10,9 +11,9 @@ namespace Analytics.Application.Features.EventHandlers;
 public sealed class TransactionDeletedEventHandler : IEventHandler<TransactionDeletedEvent>
 {
     private readonly IAnalyticSnapshotRepository _analyticSnapshotRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAnalyticsUnitOfWork _unitOfWork;
 
-    public TransactionDeletedEventHandler(IAnalyticSnapshotRepository analyticSnapshotRepository, IUnitOfWork unitOfWork)
+    public TransactionDeletedEventHandler(IAnalyticSnapshotRepository analyticSnapshotRepository, IAnalyticsUnitOfWork unitOfWork)
     {
         _analyticSnapshotRepository = analyticSnapshotRepository;
         _unitOfWork = unitOfWork;

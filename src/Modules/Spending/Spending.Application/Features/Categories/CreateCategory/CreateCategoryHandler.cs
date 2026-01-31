@@ -1,4 +1,5 @@
 using SpendBear.SharedKernel;
+using Spending.Application.Abstractions;
 using Spending.Domain.Entities;
 using Spending.Domain.Repositories;
 
@@ -7,11 +8,11 @@ namespace Spending.Application.Features.Categories.CreateCategory;
 public sealed class CreateCategoryHandler
 {
     private readonly ICategoryRepository _categoryRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ISpendingUnitOfWork _unitOfWork;
 
     public CreateCategoryHandler(
         ICategoryRepository categoryRepository,
-        IUnitOfWork unitOfWork)
+        ISpendingUnitOfWork unitOfWork)
     {
         _categoryRepository = categoryRepository;
         _unitOfWork = unitOfWork;

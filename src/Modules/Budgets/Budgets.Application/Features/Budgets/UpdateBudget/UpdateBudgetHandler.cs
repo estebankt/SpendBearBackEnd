@@ -1,3 +1,4 @@
+using Budgets.Application.Abstractions;
 using Budgets.Application.Features.Budgets.DTOs;
 using Budgets.Domain.Repositories;
 using SpendBear.SharedKernel;
@@ -7,9 +8,9 @@ namespace Budgets.Application.Features.Budgets.UpdateBudget;
 public sealed class UpdateBudgetHandler
 {
     private readonly IBudgetRepository _budgetRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IBudgetsUnitOfWork _unitOfWork;
 
-    public UpdateBudgetHandler(IBudgetRepository budgetRepository, IUnitOfWork unitOfWork)
+    public UpdateBudgetHandler(IBudgetRepository budgetRepository, IBudgetsUnitOfWork unitOfWork)
     {
         _budgetRepository = budgetRepository;
         _unitOfWork = unitOfWork;

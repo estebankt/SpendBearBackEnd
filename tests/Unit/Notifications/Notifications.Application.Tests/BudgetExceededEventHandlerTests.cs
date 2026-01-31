@@ -6,6 +6,7 @@ using Notifications.Application.Services;
 using Notifications.Domain.Entities;
 using Notifications.Domain.Enums;
 using Notifications.Domain.Repositories;
+using Notifications.Application.Abstractions;
 using SpendBear.SharedKernel;
 
 namespace Notifications.Application.Tests;
@@ -14,14 +15,14 @@ public class BudgetExceededEventHandlerTests
 {
     private readonly Mock<INotificationRepository> _mockRepository;
     private readonly Mock<IEmailService> _mockEmailService;
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<INotificationsUnitOfWork> _mockUnitOfWork;
     private readonly BudgetExceededEventHandler _handler;
 
     public BudgetExceededEventHandlerTests()
     {
         _mockRepository = new Mock<INotificationRepository>();
         _mockEmailService = new Mock<IEmailService>();
-        _mockUnitOfWork = new Mock<IUnitOfWork>();
+        _mockUnitOfWork = new Mock<INotificationsUnitOfWork>();
         _handler = new BudgetExceededEventHandler(
             _mockRepository.Object,
             _mockEmailService.Object,

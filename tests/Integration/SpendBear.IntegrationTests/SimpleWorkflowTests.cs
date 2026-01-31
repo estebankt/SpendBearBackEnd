@@ -36,7 +36,7 @@ public class SimpleWorkflowTests : IntegrationTestBase
         var categoryRepo = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
         var transactionRepo = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
         var analyticsRepo = scope.ServiceProvider.GetRequiredService<IAnalyticSnapshotRepository>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<SpendBear.SharedKernel.IUnitOfWork>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<Spending.Application.Abstractions.ISpendingUnitOfWork>();
 
         // Act - Create category
         var categoryResult = Spending.Domain.Entities.Category.Create(categoryName, "Test Description", userId);
@@ -87,7 +87,7 @@ public class SimpleWorkflowTests : IntegrationTestBase
         var categoryRepo = scope.ServiceProvider.GetRequiredService<ICategoryRepository>();
         var transactionRepo = scope.ServiceProvider.GetRequiredService<ITransactionRepository>();
         var analyticsRepo = scope.ServiceProvider.GetRequiredService<IAnalyticSnapshotRepository>();
-        var unitOfWork = scope.ServiceProvider.GetRequiredService<SpendBear.SharedKernel.IUnitOfWork>();
+        var unitOfWork = scope.ServiceProvider.GetRequiredService<Spending.Application.Abstractions.ISpendingUnitOfWork>();
 
         // Create category
         var category = Spending.Domain.Entities.Category.Create("Food", "Food expenses", userId).Value;

@@ -1,3 +1,4 @@
+using Budgets.Application.Abstractions;
 using Budgets.Domain.Repositories;
 using SpendBear.SharedKernel;
 
@@ -6,9 +7,9 @@ namespace Budgets.Application.Features.Budgets.DeleteBudget;
 public sealed class DeleteBudgetHandler
 {
     private readonly IBudgetRepository _budgetRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IBudgetsUnitOfWork _unitOfWork;
 
-    public DeleteBudgetHandler(IBudgetRepository budgetRepository, IUnitOfWork unitOfWork)
+    public DeleteBudgetHandler(IBudgetRepository budgetRepository, IBudgetsUnitOfWork unitOfWork)
     {
         _budgetRepository = budgetRepository;
         _unitOfWork = unitOfWork;

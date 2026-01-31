@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Moq;
+using Spending.Application.Abstractions;
 using SpendBear.SharedKernel;
 using Spending.Application.Features.Transactions.CreateTransaction;
 using Spending.Domain.Entities;
@@ -10,13 +11,13 @@ namespace Spending.Application.Tests.Features;
 public class CreateTransactionHandlerTests
 {
     private readonly Mock<ITransactionRepository> _mockRepository;
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<ISpendingUnitOfWork> _mockUnitOfWork;
     private readonly CreateTransactionHandler _handler;
 
     public CreateTransactionHandlerTests()
     {
         _mockRepository = new Mock<ITransactionRepository>();
-        _mockUnitOfWork = new Mock<IUnitOfWork>();
+        _mockUnitOfWork = new Mock<ISpendingUnitOfWork>();
         _handler = new CreateTransactionHandler(_mockRepository.Object, _mockUnitOfWork.Object);
     }
 

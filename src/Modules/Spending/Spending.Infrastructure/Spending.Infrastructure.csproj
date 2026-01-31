@@ -1,6 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <ItemGroup>
+    <ProjectReference Include="..\Spending.Application\Spending.Application.csproj" />
     <ProjectReference Include="..\Spending.Domain\Spending.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\SpendBear.Infrastructure.Core\SpendBear.Infrastructure.Core.csproj" />
   </ItemGroup>

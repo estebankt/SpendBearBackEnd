@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore.Storage;
-using SpendBear.SharedKernel;
+using Notifications.Application.Abstractions;
 
 namespace Notifications.Infrastructure.Persistence;
 
-internal sealed class UnitOfWork : IUnitOfWork
+internal sealed class UnitOfWork : INotificationsUnitOfWork
 {
     private readonly NotificationsDbContext _context;
     private IDbContextTransaction? _currentTransaction;

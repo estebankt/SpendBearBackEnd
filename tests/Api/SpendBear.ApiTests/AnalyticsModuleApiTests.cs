@@ -61,8 +61,8 @@ public class AnalyticsModuleApiTests : ApiTestBase
         var summary = await response.Content.ReadFromJsonAsync<MonthlySummaryResponse>();
         summary.Should().NotBeNull();
         summary!.TotalExpense.Should().BeGreaterThan(0);
-        summary.Year.Should().Be(year);
-        summary.Month.Should().Be(month);
+        summary.PeriodStart.Year.Should().Be(year);
+        summary.PeriodStart.Month.Should().Be(month);
     }
 
     [Fact]
@@ -135,14 +135,14 @@ public class AnalyticsModuleApiTests : ApiTestBase
     }
 
     // DTOs for deserialization
-    private record CategoryResponse(Guid Id, string Name, string? Description, Guid UserId);
+    private record CategoryResponse(Guid Id, string Name, string? Description, bool IsSystemCategory = false);
 
     private record MonthlySummaryResponse(
-        Guid Id,
-        int Year,
-        int Month,
+        DateOnly PeriodStart,
+        DateOnly PeriodEnd,
         decimal TotalIncome,
         decimal TotalExpense,
         decimal NetBalance,
-        string Period);
+        Dictionary<Guid, decimal>? SpendingByCategory,
+        Dictionary<Guid, decimal>? IncomeByCategory);
 }

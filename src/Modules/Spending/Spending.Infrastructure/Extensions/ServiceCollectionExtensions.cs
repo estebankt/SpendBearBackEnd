@@ -1,7 +1,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using SpendBear.Infrastructure.Core.Extensions;
-using SpendBear.SharedKernel;
+using Spending.Application.Abstractions;
 using Spending.Domain.Repositories;
 using Spending.Infrastructure.Data;
 using Spending.Infrastructure.Data.Repositories;
@@ -17,8 +17,8 @@ public static class ServiceCollectionExtensions
         // Register DbContext with retry logic
         services.AddPostgreSqlContext<SpendingDbContext>(configuration);
 
-        // Register UnitOfWork
-        services.AddScoped<IUnitOfWork>(sp => sp.GetRequiredService<SpendingDbContext>());
+        // Register module-specific UnitOfWork
+        services.AddScoped<ISpendingUnitOfWork>(sp => sp.GetRequiredService<SpendingDbContext>());
 
         // Register repositories
         services.AddScoped<ITransactionRepository, TransactionRepository>();

@@ -6,8 +6,8 @@ public static class CreateTransactionValidator
 {
     public static Result Validate(CreateTransactionCommand command)
     {
-        if (command.Amount == 0)
-            return Result.Failure(new Error("CreateTransaction.InvalidAmount", "Amount cannot be zero."));
+        if (command.Amount <= 0)
+            return Result.Failure(new Error("CreateTransaction.InvalidAmount", "Amount must be greater than zero."));
 
         if (string.IsNullOrWhiteSpace(command.Currency))
             return Result.Failure(new Error("CreateTransaction.InvalidCurrency", "Currency is required."));

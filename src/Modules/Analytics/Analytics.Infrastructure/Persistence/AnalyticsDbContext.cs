@@ -2,10 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using Analytics.Domain.Entities;
 using SpendBear.Infrastructure.Core.Data;
 using Analytics.Infrastructure.Persistence.Configurations;
+using Analytics.Application.Abstractions;
 
 namespace Analytics.Infrastructure.Persistence;
 
-public sealed class AnalyticsDbContext : BaseDbContext
+public sealed class AnalyticsDbContext : BaseDbContext, IAnalyticsUnitOfWork
 {
     public AnalyticsDbContext(DbContextOptions<AnalyticsDbContext> options)
         : base(options)

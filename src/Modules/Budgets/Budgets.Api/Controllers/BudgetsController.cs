@@ -54,7 +54,7 @@ public sealed class BudgetsController : ControllerBase
             request.Amount,
             request.Currency,
             request.Period,
-            request.StartDate,
+            request.StartDate ?? DateTime.UtcNow,
             request.CategoryId,
             request.WarningThreshold
         );
@@ -119,7 +119,7 @@ public sealed class BudgetsController : ControllerBase
             request.Name,
             request.Amount,
             request.Period,
-            request.StartDate,
+            request.StartDate ?? DateTime.UtcNow,
             request.CategoryId,
             request.WarningThreshold
         );

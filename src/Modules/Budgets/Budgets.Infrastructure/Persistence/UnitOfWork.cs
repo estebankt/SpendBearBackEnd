@@ -1,9 +1,9 @@
 using Microsoft.EntityFrameworkCore.Storage;
-using SpendBear.SharedKernel;
+using Budgets.Application.Abstractions;
 
 namespace Budgets.Infrastructure.Persistence;
 
-public sealed class UnitOfWork : IUnitOfWork
+public sealed class UnitOfWork : IBudgetsUnitOfWork
 {
     private readonly BudgetsDbContext _context;
     private IDbContextTransaction? _currentTransaction;
