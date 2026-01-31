@@ -577,4 +577,4 @@ For questions or issues, refer to:
 - [Spending Module Summary](./SPENDING_MODULE_SUMMARY.md)
 - [Budgets Module Summary](./BUDGETS_MODULE_SUMMARY.md)
 - [Notifications Module Summary](./NOTIFICATIONS_MODULE_SUMMARY.md)
-- [Project Instructions](./CLAUDE.md)
+- [Project Instructions](../CLAUDE.md)

@@ -537,6 +537,6 @@ dotnet build
 
 For questions or issues, refer to:
 - [Product Requirements](./PRD.md)
-- [Technical Architecture](./docs/architecture.md)
+- [Technical Architecture](./architecture.md)
 - [Spending Module Summary](./SPENDING_MODULE_SUMMARY.md)
-- [Project Instructions](./CLAUDE.md)
+- [Project Instructions](../CLAUDE.md)

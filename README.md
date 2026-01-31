@@ -34,19 +34,19 @@ Visit http://localhost:5109/scalar/v1 to explore the API documentation.
 
 ### Core Documents
 - 📋 [Claude Context](./CLAUDE.md) - Development guidelines and project context
-- 📄 [Product Requirements](./PRD.md) - User stories and acceptance criteria
-- 📊 [Project Status](./PROJECT_STATUS.md) - Current implementation status and metrics
+- 📄 [Product Requirements](./documentation/PRD.md) - User stories and acceptance criteria
+- 📊 [Project Status](./documentation/PROJECT_STATUS.md) - Current implementation status and metrics
 
 ### Module Documentation (900+ lines total)
-- 💰 [Spending Module](./SPENDING_MODULE_SUMMARY.md) - Complete module guide
-- 🎯 [Budgets Module](./BUDGETS_MODULE_SUMMARY.md) - Complete module guide
-- 🔔 [Notifications Module](./NOTIFICATIONS_MODULE_SUMMARY.md) - Complete module guide
-- 📈 [Analytics Module](./ANALYTICS_MODULE_SUMMARY.md) - Complete module guide
+- 💰 [Spending Module](./documentation/SPENDING_MODULE_SUMMARY.md) - Complete module guide
+- 🎯 [Budgets Module](./documentation/BUDGETS_MODULE_SUMMARY.md) - Complete module guide
+- 🔔 [Notifications Module](./documentation/NOTIFICATIONS_MODULE_SUMMARY.md) - Complete module guide
+- 📈 [Analytics Module](./documentation/ANALYTICS_MODULE_SUMMARY.md) - Complete module guide
 
 ### Technical Documentation
-- 🏗️ [Architecture](./docs/architecture.md) - System design and patterns
-- 🔌 [API Design](./docs/api.md) - Endpoint specifications
-- 🚀 [Deployment](./docs/deployment.md) - Infrastructure and CI/CD
+- 🏗️ [Architecture](./documentation/architecture.md) - System design and patterns
+- 🔌 [API Design](./documentation/api.md) - Endpoint specifications
+- 🚀 [Deployment](./documentation/deployment.md) - Infrastructure and CI/CD
 
 ## Tech Stack
 
@@ -114,7 +114,7 @@ SpendBear/Backend/
 │   ├── Domain.Tests/           # 94 total tests
 │   ├── Application.Tests/      # 91 passing (97%)
 │   └── Integration/            # TestContainers E2E
-└── docs/                       # 1,900+ lines of docs
+└── documentation/               # 1,900+ lines of docs
 ```
 
 ## Features

@@ -134,7 +134,7 @@ SpendBear/
 _Add notes here during development sessions_
 
 ## References
-- [Product Requirements](./PRD.md)
-- [Technical Architecture](./docs/architecture.md)
-- [API Design](./docs/api.md)
-- [Task Tracking](./tasks.md)
+- [Product Requirements](./documentation/PRD.md)
+- [Technical Architecture](./documentation/architecture.md)
+- [API Design](./documentation/api.md)
+- [Task Tracking](./documentation/tasks.md)
