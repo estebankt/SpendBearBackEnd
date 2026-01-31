@@ -1,3 +1,4 @@
+using Notifications.Application.Abstractions;
 using Notifications.Domain.Repositories;
 using SpendBear.SharedKernel;
 
@@ -6,11 +7,11 @@ namespace Notifications.Application.Features.Commands.MarkNotificationAsRead;
 public sealed class MarkNotificationAsReadHandler
 {
     private readonly INotificationRepository _notificationRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationsUnitOfWork _unitOfWork;
 
     public MarkNotificationAsReadHandler(
         INotificationRepository notificationRepository,
-        IUnitOfWork unitOfWork)
+        INotificationsUnitOfWork unitOfWork)
     {
         _notificationRepository = notificationRepository;
         _unitOfWork = unitOfWork;

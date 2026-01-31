@@ -1,3 +1,4 @@
+using Analytics.Application.Abstractions;
 using Analytics.Domain.Entities;
 using Analytics.Domain.Repositories;
 using SpendBear.SharedKernel;
@@ -10,9 +11,9 @@ namespace Analytics.Application.Features.EventHandlers;
 public sealed class TransactionCreatedEventHandler : IEventHandler<TransactionCreatedEvent>
 {
     private readonly IAnalyticSnapshotRepository _analyticSnapshotRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IAnalyticsUnitOfWork _unitOfWork;
 
-    public TransactionCreatedEventHandler(IAnalyticSnapshotRepository analyticSnapshotRepository, IUnitOfWork unitOfWork)
+    public TransactionCreatedEventHandler(IAnalyticSnapshotRepository analyticSnapshotRepository, IAnalyticsUnitOfWork unitOfWork)
     {
         _analyticSnapshotRepository = analyticSnapshotRepository;
         _unitOfWork = unitOfWork;
@@ -20,21 +21,21 @@ public sealed class TransactionCreatedEventHandler : IEventHandler<TransactionCr
 
     public async Task Handle(TransactionCreatedEvent @event, CancellationToken cancellationToken = default)
     {
-        var snapshotDate = DateOnly.FromDateTime(@event.Date.Date); // Use the date of the transaction
-        var period = SnapshotPeriod.Monthly; // For now, focus on monthly snapshots
+        var snapshotDate = DateOnly.FromDateTime(@event.Date.Date);
+        var period = SnapshotPeriod.Monthly;
+
+        // For monthly snapshots, always use the first day of the month
+        var firstDayOfMonth = new DateOnly(snapshotDate.Year, snapshotDate.Month, 1);
 
         var existingSnapshot = await _analyticSnapshotRepository.GetByUserIdAndDateAsync(
             @event.UserId,
-            snapshotDate, // For monthly, we might want to get the first day of the month
+            firstDayOfMonth,
             period,
             cancellationToken
         );
 
         if (existingSnapshot == null)
         {
-            // For monthly snapshots, calculate the first day of the month
-            var firstDayOfMonth = new DateOnly(snapshotDate.Year, snapshotDate.Month, 1);
-
             var newSnapshotResult = AnalyticSnapshot.Create(
                 @event.UserId,
                 firstDayOfMonth,

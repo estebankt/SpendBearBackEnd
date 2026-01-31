@@ -1,3 +1,4 @@
+using Budgets.Application.Abstractions;
 using Budgets.Application.Features.Budgets.DTOs;
 using Budgets.Domain.Entities;
 using Budgets.Domain.Repositories;
@@ -8,9 +9,9 @@ namespace Budgets.Application.Features.Budgets.CreateBudget;
 public sealed class CreateBudgetHandler
 {
     private readonly IBudgetRepository _budgetRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IBudgetsUnitOfWork _unitOfWork;
 
-    public CreateBudgetHandler(IBudgetRepository budgetRepository, IUnitOfWork unitOfWork)
+    public CreateBudgetHandler(IBudgetRepository budgetRepository, IBudgetsUnitOfWork unitOfWork)
     {
         _budgetRepository = budgetRepository;
         _unitOfWork = unitOfWork;

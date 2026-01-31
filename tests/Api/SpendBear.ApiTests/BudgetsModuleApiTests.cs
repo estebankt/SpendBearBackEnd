@@ -15,7 +15,7 @@ public class BudgetsModuleApiTests : ApiTestBase
     public async Task CreateBudget_WithValidData_ReturnsCreated()
     {
         // Arrange
-        var categoryRequest = new { name = "Groceries", description = "Food shopping" };
+        var categoryRequest = new { name = "Grocery Shopping", description = "Food shopping" };
         var categoryResponse = await Client.PostAsJsonAsync("/api/spending/categories", categoryRequest);
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryResponse>();
 
@@ -47,7 +47,7 @@ public class BudgetsModuleApiTests : ApiTestBase
     public async Task GetBudgets_AfterCreatingBudget_ReturnsBudgets()
     {
         // Arrange - Create category and budget
-        var categoryRequest = new { name = "Utilities", description = "Bills" };
+        var categoryRequest = new { name = "Home Bills", description = "Bills" };
         var categoryResponse = await Client.PostAsJsonAsync("/api/spending/categories", categoryRequest);
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryResponse>();
 
@@ -77,7 +77,7 @@ public class BudgetsModuleApiTests : ApiTestBase
     public async Task UpdateBudget_WithValidData_ReturnsOk()
     {
         // Arrange - Create category and budget
-        var categoryRequest = new { name = "Entertainment", description = "Fun stuff" };
+        var categoryRequest = new { name = "Leisure", description = "Fun stuff" };
         var categoryResponse = await Client.PostAsJsonAsync("/api/spending/categories", categoryRequest);
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryResponse>();
 
@@ -199,7 +199,7 @@ public class BudgetsModuleApiTests : ApiTestBase
     }
 
     // DTOs for deserialization
-    private record CategoryResponse(Guid Id, string Name, string? Description, Guid UserId);
+    private record CategoryResponse(Guid Id, string Name, string? Description, bool IsSystemCategory = false);
 
     private record BudgetResponse(
         Guid Id,
@@ -207,7 +207,11 @@ public class BudgetsModuleApiTests : ApiTestBase
         decimal Amount,
         string Currency,
         string Period,
-        Guid? CategoryId,
-        decimal WarningThreshold,
-        Guid UserId);
+        Guid? CategoryId = null,
+        decimal WarningThreshold = 0,
+        decimal CurrentSpent = 0,
+        decimal RemainingAmount = 0,
+        decimal PercentageUsed = 0,
+        bool IsExceeded = false,
+        bool WarningTriggered = false);
 }

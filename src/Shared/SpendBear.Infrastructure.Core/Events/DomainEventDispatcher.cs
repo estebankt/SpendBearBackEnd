@@ -1,6 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
 using SpendBear.SharedKernel;
-using System.Reflection;
 
 namespace SpendBear.Infrastructure.Core.Events;
 
@@ -17,11 +16,18 @@ public sealed class DomainEventDispatcher : IDomainEventDispatcher
         where TDomainEvent : IDomainEvent
     {
         using var scope = _serviceProvider.CreateScope();
-        var handlers = scope.ServiceProvider.GetServices<IEventHandler<TDomainEvent>>();
+
+        // Use the runtime type to resolve handlers, since domainEvent may be
+        // typed as IDomainEvent at compile time but be a concrete event at runtime.
+        var eventType = domainEvent.GetType();
+        var handlerType = typeof(IEventHandler<>).MakeGenericType(eventType);
+        var handlers = scope.ServiceProvider.GetServices(handlerType);
 
         foreach (var handler in handlers)
         {
-            await handler.Handle(domainEvent, cancellationToken);
+            var method = handlerType.GetMethod("Handle")!;
+            var task = (Task)method.Invoke(handler, [domainEvent, cancellationToken])!;
+            await task;
         }
     }
 }

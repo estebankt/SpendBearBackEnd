@@ -1,6 +1,7 @@
 using Budgets.Domain.Events;
 using Notifications.Application.Services;
 using Notifications.Domain.Enums;
+using Notifications.Application.Abstractions;
 using Notifications.Domain.Repositories;
 using SpendBear.SharedKernel;
 
@@ -10,12 +11,12 @@ public sealed class BudgetExceededEventHandler : IEventHandler<BudgetExceededEve
 {
     private readonly INotificationRepository _notificationRepository;
     private readonly IEmailService _emailService;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly INotificationsUnitOfWork _unitOfWork;
 
     public BudgetExceededEventHandler(
         INotificationRepository notificationRepository,
         IEmailService emailService,
-        IUnitOfWork unitOfWork)
+        INotificationsUnitOfWork unitOfWork)
     {
         _notificationRepository = notificationRepository;
         _emailService = emailService;

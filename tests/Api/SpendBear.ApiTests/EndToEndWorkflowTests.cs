@@ -15,7 +15,7 @@ public class EndToEndWorkflowTests : ApiTestBase
     public async Task CompleteUserWorkflow_CreateCategoryTransactionBudget_TriggersAnalyticsUpdate()
     {
         // Arrange & Act - Step 1: Create a category
-        var categoryRequest = new { name = "Dining Out", description = "Restaurants and cafes" };
+        var categoryRequest = new { name = "Fine Dining", description = "Restaurants and cafes" };
         var categoryResponse = await Client.PostAsJsonAsync("/api/spending/categories", categoryRequest);
         categoryResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -62,8 +62,8 @@ public class EndToEndWorkflowTests : ApiTestBase
         var analytics = await analyticsResponse.Content.ReadFromJsonAsync<AnalyticsDto>();
         analytics.Should().NotBeNull();
         analytics!.TotalExpense.Should().BeGreaterThanOrEqualTo(125.00m);
-        analytics.Year.Should().Be(year);
-        analytics.Month.Should().Be(month);
+        analytics.PeriodStart.Year.Should().Be(year);
+        analytics.PeriodStart.Month.Should().Be(month);
 
         // Assert - Step 5: Verify budget was updated (check currentAmount)
         var budgetsResponse = await Client.GetAsync("/api/budgets");
@@ -117,7 +117,7 @@ public class EndToEndWorkflowTests : ApiTestBase
 
         notificationsResponse.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<NotificationsDto>();
+        var notifications = await notificationsResponse.Content.ReadFromJsonAsync<NotificationsPagedResult>();
         notifications.Should().NotBeNull();
 
         // Note: Notification might not be created if budget doesn't emit event yet
@@ -128,7 +128,7 @@ public class EndToEndWorkflowTests : ApiTestBase
     public async Task MultipleTransactions_AggregateInAnalytics()
     {
         // Arrange - Create category
-        var categoryRequest = new { name = "Groceries", description = "Food shopping" };
+        var categoryRequest = new { name = "Weekly Groceries", description = "Food shopping" };
         var categoryResponse = await Client.PostAsJsonAsync("/api/spending/categories", categoryRequest);
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryDto>();
 
@@ -217,10 +217,21 @@ public class EndToEndWorkflowTests : ApiTestBase
     }
 
     // DTOs for deserialization
-    private record CategoryDto(Guid Id, string Name, string? Description, Guid UserId);
+    private record CategoryDto(Guid Id, string Name, string? Description, bool IsSystemCategory = false);
     private record BudgetDto(Guid Id, string Name, decimal Amount, string Currency, string Period);
     private record TransactionDto(Guid Id, decimal Amount, string Currency, string Description);
-    private record AnalyticsDto(Guid Id, int Year, int Month, decimal TotalIncome, decimal TotalExpense, decimal NetBalance, string Period);
-    private record NotificationsDto(List<NotificationDto>? Data);
-    private record NotificationDto(Guid Id, string Type, string Status);
+    private record AnalyticsDto(
+        DateOnly PeriodStart,
+        DateOnly PeriodEnd,
+        decimal TotalIncome,
+        decimal TotalExpense,
+        decimal NetBalance,
+        Dictionary<Guid, decimal>? SpendingByCategory,
+        Dictionary<Guid, decimal>? IncomeByCategory);
+    private record NotificationsPagedResult(
+        List<NotificationItemDto>? Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize);
+    private record NotificationItemDto(Guid Id, string Type, string Status);
 }

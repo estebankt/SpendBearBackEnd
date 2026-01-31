@@ -4,6 +4,7 @@ using Budgets.Domain.Enums;
 using Budgets.Domain.Repositories;
 using FluentAssertions;
 using Moq;
+using Budgets.Application.Abstractions;
 using SpendBear.SharedKernel;
 
 namespace Budgets.Application.Tests.Features;
@@ -11,13 +12,13 @@ namespace Budgets.Application.Tests.Features;
 public class TransactionCreatedEventHandlerTests
 {
     private readonly Mock<IBudgetRepository> _mockRepository;
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<IBudgetsUnitOfWork> _mockUnitOfWork;
     private readonly TransactionCreatedEventHandler _handler;
 
     public TransactionCreatedEventHandlerTests()
     {
         _mockRepository = new Mock<IBudgetRepository>();
-        _mockUnitOfWork = new Mock<IUnitOfWork>();
+        _mockUnitOfWork = new Mock<IBudgetsUnitOfWork>();
         _handler = new TransactionCreatedEventHandler(_mockRepository.Object, _mockUnitOfWork.Object);
     }
 

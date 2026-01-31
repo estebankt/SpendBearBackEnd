@@ -6,6 +6,7 @@ using FluentAssertions;
 using Moq;
 using Spending.Domain.Entities;
 using Spending.Domain.Events;
+using Analytics.Application.Abstractions;
 using SpendBear.SharedKernel;
 
 namespace Analytics.Application.Tests;
@@ -13,13 +14,13 @@ namespace Analytics.Application.Tests;
 public class TransactionCreatedEventHandlerTests
 {
     private readonly Mock<IAnalyticSnapshotRepository> _mockRepository;
-    private readonly Mock<IUnitOfWork> _mockUnitOfWork;
+    private readonly Mock<IAnalyticsUnitOfWork> _mockUnitOfWork;
     private readonly TransactionCreatedEventHandler _handler;
 
     public TransactionCreatedEventHandlerTests()
     {
         _mockRepository = new Mock<IAnalyticSnapshotRepository>();
-        _mockUnitOfWork = new Mock<IUnitOfWork>();
+        _mockUnitOfWork = new Mock<IAnalyticsUnitOfWork>();
         _handler = new TransactionCreatedEventHandler(
             _mockRepository.Object,
             _mockUnitOfWork.Object

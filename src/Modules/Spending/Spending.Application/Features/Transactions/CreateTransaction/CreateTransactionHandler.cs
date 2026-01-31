@@ -1,4 +1,5 @@
 using SpendBear.SharedKernel;
+using Spending.Application.Abstractions;
 using Spending.Domain.Entities;
 using Spending.Domain.Repositories;
 using Spending.Domain.ValueObjects;
@@ -8,11 +9,11 @@ namespace Spending.Application.Features.Transactions.CreateTransaction;
 public sealed class CreateTransactionHandler
 {
     private readonly ITransactionRepository _transactionRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ISpendingUnitOfWork _unitOfWork;
 
     public CreateTransactionHandler(
         ITransactionRepository transactionRepository,
-        IUnitOfWork unitOfWork)
+        ISpendingUnitOfWork unitOfWork)
     {
         _transactionRepository = transactionRepository;
         _unitOfWork = unitOfWork;

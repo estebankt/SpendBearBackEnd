@@ -111,16 +111,16 @@ public class SpendingModuleApiTests : ApiTestBase
         // Assert
         response.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        var transactions = await response.Content.ReadFromJsonAsync<List<TransactionResponse>>();
-        transactions.Should().NotBeNull();
-        transactions.Should().Contain(t => t.Description == "New shoes");
+        var paged = await response.Content.ReadFromJsonAsync<PagedTransactionResponse>();
+        paged.Should().NotBeNull();
+        paged!.Items.Should().Contain(t => t.Description == "New shoes");
     }
 
     [Fact]
     public async Task UpdateTransaction_WithValidData_ReturnsOk()
     {
         // Arrange - Create category and transaction
-        var categoryRequest = new { name = "Entertainment", description = "Movies, games" };
+        var categoryRequest = new { name = "Fun Activities", description = "Movies, games" };
         var categoryResponse = await Client.PostAsJsonAsync("/api/spending/categories", categoryRequest);
         var category = await categoryResponse.Content.ReadFromJsonAsync<CategoryResponse>();
 
@@ -186,8 +186,8 @@ public class SpendingModuleApiTests : ApiTestBase
 
         // Verify deletion
         var getResponse = await Client.GetAsync("/api/spending/transactions");
-        var transactions = await getResponse.Content.ReadFromJsonAsync<List<TransactionResponse>>();
-        transactions.Should().NotContain(t => t.Id == transaction.Id);
+        var paged = await getResponse.Content.ReadFromJsonAsync<PagedTransactionResponse>();
+        paged!.Items.Should().NotContain(t => t.Id == transaction.Id);
     }
 
     [Fact]
@@ -216,7 +216,7 @@ public class SpendingModuleApiTests : ApiTestBase
     }
 
     // DTOs for deserialization
-    private record CategoryResponse(Guid Id, string Name, string? Description, Guid UserId);
+    private record CategoryResponse(Guid Id, string Name, string? Description, bool IsSystemCategory = false);
 
     private record TransactionResponse(
         Guid Id,
@@ -225,6 +225,11 @@ public class SpendingModuleApiTests : ApiTestBase
         DateTime Date,
         string Description,
         Guid CategoryId,
-        string Type,
-        Guid UserId);
+        string Type);
+
+    private record PagedTransactionResponse(
+        List<TransactionResponse> Items,
+        int TotalCount,
+        int PageNumber,
+        int PageSize);
 }

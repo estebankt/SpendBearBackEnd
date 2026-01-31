@@ -7,7 +7,7 @@ public sealed record CreateBudgetRequest(
     decimal Amount,
     string Currency,
     BudgetPeriod Period,
-    DateTime StartDate,
+    DateTime? StartDate = null,
     Guid? CategoryId = null,
     decimal WarningThreshold = 80
 );

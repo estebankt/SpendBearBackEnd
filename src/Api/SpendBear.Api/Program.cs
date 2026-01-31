@@ -38,6 +38,10 @@ try
     // Add services to the container.
 
     builder.Services.AddControllers()
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
+        })
         .AddApplicationPart(typeof(Spending.Api.Controllers.TransactionsController).Assembly)
         .AddApplicationPart(typeof(Budgets.Api.Controllers.BudgetsController).Assembly)
         .AddApplicationPart(typeof(Identity.Api.Controllers.IdentityController).Assembly)

@@ -6,7 +6,7 @@ public sealed record UpdateBudgetRequest(
     string Name,
     decimal Amount,
     BudgetPeriod Period,
-    DateTime StartDate,
-    Guid? CategoryId,
-    decimal WarningThreshold
+    DateTime? StartDate = null,
+    Guid? CategoryId = null,
+    decimal WarningThreshold = 80
 );

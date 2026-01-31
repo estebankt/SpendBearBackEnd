@@ -1,4 +1,5 @@
 using SpendBear.SharedKernel;
+using Spending.Application.Abstractions;
 using Spending.Domain.Repositories;
 
 namespace Spending.Application.Features.Transactions.DeleteTransaction;
@@ -6,11 +7,11 @@ namespace Spending.Application.Features.Transactions.DeleteTransaction;
 public sealed class DeleteTransactionHandler
 {
     private readonly ITransactionRepository _transactionRepository;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly ISpendingUnitOfWork _unitOfWork;
 
     public DeleteTransactionHandler(
         ITransactionRepository transactionRepository,
-        IUnitOfWork unitOfWork)
+        ISpendingUnitOfWork unitOfWork)
     {
         _transactionRepository = transactionRepository;
         _unitOfWork = unitOfWork;

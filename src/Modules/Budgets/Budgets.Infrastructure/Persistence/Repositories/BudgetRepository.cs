@@ -1,3 +1,4 @@
+using Budgets.Application.Abstractions;
 using Budgets.Domain.Entities;
 using Budgets.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
@@ -8,9 +9,9 @@ namespace Budgets.Infrastructure.Persistence.Repositories;
 public sealed class BudgetRepository : IBudgetRepository
 {
     private readonly BudgetsDbContext _context;
-    private readonly IUnitOfWork _unitOfWork;
+    private readonly IBudgetsUnitOfWork _unitOfWork;
 
-    public BudgetRepository(BudgetsDbContext context, IUnitOfWork unitOfWork)
+    public BudgetRepository(BudgetsDbContext context, IBudgetsUnitOfWork unitOfWork)
     {
         _context = context;
         _unitOfWork = unitOfWork;
