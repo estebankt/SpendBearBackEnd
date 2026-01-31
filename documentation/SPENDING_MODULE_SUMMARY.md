@@ -364,6 +364,6 @@ dotnet build
 
 For questions or issues, refer to:
 - [Product Requirements](./PRD.md)
-- [Technical Architecture](./docs/architecture.md)
+- [Technical Architecture](./architecture.md)
 - [Task Tracking](./tasks.md)
-- [Project Instructions](./CLAUDE.md)
+- [Project Instructions](../CLAUDE.md)

@@ -472,4 +472,4 @@ For questions or issues, refer to:
 - [Product Requirements](./PRD.md)
 - [Technical Architecture](./architecture.md)
 - [Budgets Module Summary](./BUDGETS_MODULE_SUMMARY.md)
-- [Project Instructions](./CLAUDE.md)
+- [Project Instructions](../CLAUDE.md)

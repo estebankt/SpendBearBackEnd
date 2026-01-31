@@ -322,9 +322,9 @@ The SpendBear backend has successfully implemented **5 production-ready modules*
 ### Available Documents
 
 **Core Documentation:**
-- ✅ [README.md](./README.md) - Project overview and quick start
+- ✅ [README.md](../README.md) - Project overview and quick start
 - ✅ [PRD.md](./PRD.md) - Product Requirements Document
-- ✅ [CLAUDE.md](./CLAUDE.md) - Development guidelines and project context
+- ✅ [CLAUDE.md](../CLAUDE.md) - Development guidelines and project context
 - ✅ [PROJECT_STATUS.md](./PROJECT_STATUS.md) - This document
 
 **Module Documentation:**
@@ -335,13 +335,13 @@ The SpendBear backend has successfully implemented **5 production-ready modules*
 
 **Testing Documentation:**
 - ✅ [TEST_STATUS.md](./TEST_STATUS.md) - Complete test infrastructure status (400+ lines)
-- ✅ [tests/Api/SpendBear.ApiTests/README.md](./tests/Api/SpendBear.ApiTests/README.md) - API testing guide
-- ✅ [scripts/README.md](./scripts/README.md) - Bash test scripts documentation
+- ✅ [tests/Api/SpendBear.ApiTests/README.md](../tests/Api/SpendBear.ApiTests/README.md) - API testing guide
+- ✅ [scripts/README.md](../scripts/README.md) - Bash test scripts documentation
 
 **Deployment Documentation:**
 - ✅ [AZURE_DEPLOYMENT_GUIDE.md](./AZURE_DEPLOYMENT_GUIDE.md) - Complete Azure deployment guide (700+ lines)
-- ✅ [azure-pipelines.yml](./azure-pipelines.yml) - Azure DevOps pipeline configuration
-- ✅ [.github/workflows/azure-deploy.yml](./.github/workflows/azure-deploy.yml) - GitHub Actions workflow
+- ✅ [azure-pipelines.yml](../azure-pipelines.yml) - Azure DevOps pipeline configuration
+- ✅ [.github/workflows/azure-deploy.yml](../.github/workflows/azure-deploy.yml) - GitHub Actions workflow
 
 **Database Documentation:**
 - ✅ [PGADMIN_GUIDE.md](./PGADMIN_GUIDE.md) - pgAdmin setup and usage guide (375+ lines)

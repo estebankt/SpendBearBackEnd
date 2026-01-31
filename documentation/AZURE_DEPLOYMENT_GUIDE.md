@@ -836,7 +836,7 @@ Before going to production:
 - [Auth0 Documentation](https://auth0.com/docs)
 - [Azure DevOps Pipelines](https://docs.microsoft.com/en-us/azure/devops/pipelines/)
 - [GitHub Actions](https://docs.github.com/en/actions)
-- [SpendBear API Documentation](./README.md)
+- [SpendBear API Documentation](../README.md)
 
 ---
 
