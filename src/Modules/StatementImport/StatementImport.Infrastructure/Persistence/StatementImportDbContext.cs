@@ -1,0 +1,20 @@
+using System.Reflection;
+using Microsoft.EntityFrameworkCore;
+using SpendBear.Infrastructure.Core.Data;
+using StatementImport.Application.Abstractions;
+
+namespace StatementImport.Infrastructure.Persistence;
+
+public class StatementImportDbContext : BaseDbContext, IStatementImportUnitOfWork
+{
+    public StatementImportDbContext(DbContextOptions<StatementImportDbContext> options) : base(options)
+    {
+    }
+
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        base.OnModelCreating(modelBuilder);
+        modelBuilder.HasDefaultSchema("statement_import");
+        modelBuilder.ApplyConfigurationsFromAssembly(Assembly.GetExecutingAssembly());
+    }
+}
