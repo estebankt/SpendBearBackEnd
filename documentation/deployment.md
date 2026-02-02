@@ -26,14 +26,10 @@
 ## Local Development Setup
 
 ### Prerequisites
-```bash
-# Required tools
+
 - .NET 10 SDK
-- Node.js 18+
-- Docker Desktop
-- Azure CLI
-- PostgreSQL client (psql)
-```
+- Docker (for PostgreSQL, Redis, PgAdmin)
+- EF Core CLI tools (`dotnet tool install --global dotnet-ef`)
 
 ### Environment Setup
 ```bash
@@ -41,85 +37,36 @@
 git clone https://github.com/yourusername/spendbear.git
 cd spendbear
 
-# Copy environment template
-cp .env.example .env
-
-# Start infrastructure
+# Start infrastructure (PostgreSQL 16, Redis 7, PgAdmin 4)
 docker-compose up -d
 
 # Install dependencies
 dotnet restore
-cd src/Frontend && npm install
 ```
 
-### Docker Compose Configuration
-```yaml
-version: '3.8'
-services:
-  postgres:
-    image: postgres:15-alpine
-    environment:
-      POSTGRES_USER: spendbear
-      POSTGRES_PASSWORD: dev_password
-      POSTGRES_DB: spendbear_dev
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-
-  redis:
-    image: redis:7-alpine
-    ports:
-      - "6379:6379"
-    command: redis-server --appendonly yes
-    volumes:
-      - redis_data:/data
-
-  kafka:
-    image: confluentinc/cp-kafka:latest
-    depends_on:
-      - zookeeper
-    environment:
-      KAFKA_BROKER_ID: 1
-      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-    ports:
-      - "9092:9092"
-
-  zookeeper:
-    image: confluentinc/cp-zookeeper:latest
-    environment:
-      ZOOKEEPER_CLIENT_PORT: 2181
-    ports:
-      - "2181:2181"
-
-  mailhog:
-    image: mailhog/mailhog
-    ports:
-      - "1025:1025"
-      - "8025:8025"
-
-volumes:
-  postgres_data:
-  redis_data:
-```
+No `.env` file or additional configuration is needed. The `appsettings.json` and `appsettings.Development.json` files ship with development defaults that match the docker-compose services.
 
 ### Running Locally
 ```bash
-# Apply database migrations
-dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure
-dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure
+# Apply database migrations (all 6 modules)
+dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/StatementImport/StatementImport.Infrastructure --startup-project src/Api/SpendBear.Api
 
 # Run API
 dotnet run --project src/Api/SpendBear.Api
-
-# Run Frontend (separate terminal)
-cd src/Frontend
-npm run dev
-
-# Run background worker (separate terminal)
-dotnet run --project src/Workers/SpendBear.OutboxWorker
 ```
+
+### Verifying the setup
+
+- API docs: http://localhost:5109/scalar/v1
+- PgAdmin: http://localhost:5050 (email: `admin@spendbear.com`, password: `admin`)
+- Quick smoke test: `./scripts/quick-test.sh`
+
+In development mode, `DevelopmentAuthMiddleware` bypasses Auth0 authentication and injects a test user automatically.
 
 ## Azure Infrastructure
 
