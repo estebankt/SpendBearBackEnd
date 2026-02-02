@@ -8,28 +8,105 @@ SpendBear is a personal finance tracker architected as a **Modular Monolith** us
 
 **Status:** ✅ **Production Ready** - 6 modules implemented with 97% test coverage
 
-## Quick Start
+## Local Development Setup
+
+### Prerequisites
+
+| Tool | Purpose |
+|------|---------|
+| [.NET 10 SDK](https://dotnet.microsoft.com/download) | Build and run the API |
+| [Docker](https://docs.docker.com/get-docker/) | Run PostgreSQL, Redis, and PgAdmin |
+| [EF Core CLI tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) | Apply database migrations |
+
+Install the EF Core tools if you don't have them:
+```bash
+dotnet tool install --global dotnet-ef
+```
+
+### 1. Start infrastructure
+
+This starts PostgreSQL 16, Redis 7, and PgAdmin 4:
+```bash
+docker-compose up -d
+```
+
+Verify the containers are running:
+```bash
+docker ps
+# You should see: postgres:16, redis:7, dpage/pgadmin4
+```
+
+### 2. Restore packages
 
 ```bash
-# Start PostgreSQL with Docker
-docker-compose up -d
+dotnet restore
+```
 
-# Apply all migrations (6 modules)
-dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure
-dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure
-dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure
-dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure
-dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure
-dotnet ef database update --project src/Modules/StatementImport/StatementImport.Infrastructure
+### 3. Apply database migrations
 
-# Start the API
+Each module has its own schema and migrations. Run all six:
+```bash
+dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/StatementImport/StatementImport.Infrastructure --startup-project src/Api/SpendBear.Api
+```
+
+### 4. Run the API
+
+```bash
 dotnet run --project src/Api/SpendBear.Api
+```
 
-# Run tests (122 tests, 119 passing)
+### 5. Verify it works
+
+- API docs: http://localhost:5109/scalar/v1
+- Run the quick smoke test: `./scripts/quick-test.sh`
+- PgAdmin: http://localhost:5050 (email: `admin@spendbear.com`, password: `admin`)
+
+### Authentication in development
+
+In development mode, the `DevelopmentAuthMiddleware` bypasses Auth0 and automatically injects a test user. No Auth0 configuration is needed for local development. The test user ID is `00000000-0000-0000-0000-000000000001`.
+
+### Configuration
+
+The project ships with two appsettings files:
+
+- **`appsettings.json`** - Base config with PostgreSQL connection string (`localhost`, user `postgres`, password `postgres`) matching docker-compose
+- **`appsettings.Development.json`** - Development overrides with Auth0 dev tenant credentials (already configured)
+
+You should not need to create or modify either file for local development.
+
+### Running tests
+
+```bash
 dotnet test
 ```
 
-Visit http://localhost:5109/scalar/v1 to explore the API documentation.
+See [scripts/README.md](./scripts/README.md) for API integration test scripts.
+
+### Ports used
+
+| Port | Service |
+|------|---------|
+| 5109 | SpendBear API |
+| 5432 | PostgreSQL |
+| 6379 | Redis |
+| 5050 | PgAdmin |
+
+If any of these ports are already in use, stop the conflicting service or modify `docker-compose.yml` to use different host ports.
+
+### Tearing down
+
+```bash
+# Stop containers (preserves data)
+docker-compose down
+
+# Stop containers and delete all data
+docker-compose down -v
+```
 
 ## Documentation
 
@@ -150,19 +227,15 @@ SpendBear/Backend/
 
 ## Development
 
-### Prerequisites
-- .NET 10 SDK
-- Node.js 18+
-- Docker Desktop
-- PostgreSQL client
-
-### Commands
+### Useful commands
 ```bash
 # Run tests
 dotnet test
 
-# Add migration
-dotnet ef migrations add MigrationName
+# Add a new migration (example for Spending module)
+dotnet ef migrations add MigrationName \
+  --project src/Modules/Spending/Spending.Infrastructure \
+  --startup-project src/Api/SpendBear.Api
 
 # Build Docker image
 docker build -t spendbear-api .
