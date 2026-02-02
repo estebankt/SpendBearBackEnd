@@ -12,6 +12,8 @@ using Notifications.Infrastructure;
 using Notifications.Application;
 using Analytics.Infrastructure;
 using Analytics.Application;
+using StatementImport.Infrastructure.Extensions;
+using StatementImport.Application.Extensions;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.OpenApi;
@@ -46,7 +48,8 @@ try
         .AddApplicationPart(typeof(Budgets.Api.Controllers.BudgetsController).Assembly)
         .AddApplicationPart(typeof(Identity.Api.Controllers.IdentityController).Assembly)
         .AddApplicationPart(typeof(Notifications.Api.Controllers.NotificationsController).Assembly)
-        .AddApplicationPart(typeof(Analytics.Api.Controllers.AnalyticsController).Assembly);
+        .AddApplicationPart(typeof(Analytics.Api.Controllers.AnalyticsController).Assembly)
+        .AddApplicationPart(typeof(StatementImport.Api.Controllers.StatementImportController).Assembly);
 
     builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(options =>
@@ -126,6 +129,10 @@ try
     // Analytics Module
     builder.Services.AddAnalyticsInfrastructure(builder.Configuration);
     builder.Services.AddAnalyticsApplication();
+
+    // StatementImport Module
+    builder.Services.AddStatementImportInfrastructure(builder.Configuration);
+    builder.Services.AddStatementImportApplication();
 
     var app = builder.Build();
 
