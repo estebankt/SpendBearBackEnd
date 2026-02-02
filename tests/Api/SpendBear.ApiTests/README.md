@@ -31,7 +31,7 @@ These tests verify the **complete HTTP request/response cycle** including:
 `ApiTestBase.cs` provides:
 - PostgreSQL TestContainer setup (fresh database per test class)
 - `WebApplicationFactory<Program>` configuration
-- Automatic database migrations for all 5 modules
+- Automatic database migrations for all 6 modules
 - Event dispatcher registration
 - HttpClient for API calls
 
@@ -261,7 +261,7 @@ private record YourDto(Guid Id, string Name, ...);
 - Verify domain events are being raised
 
 ### Database Migration Issues
-- Check all 5 modules have migrations
+- Check all 6 modules have migrations
 - Verify connection string is passed correctly
 - Check schema names match (`spending`, `budgets`, etc.)
 

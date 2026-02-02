@@ -149,17 +149,19 @@ Empower users to take control of their financial health through intelligent expe
 
 ### Epic 5: Data Management
 
-#### UC-11: Bank Import (Future)
-**As a** user  
-**I want to** import bank transactions  
+#### UC-11: Statement Import ✅ Implemented
+**As a** user
+**I want to** import bank statement transactions
 **So that** I don't manually enter everything
 
 **Acceptance Criteria:**
-- Support CSV format
-- Auto-categorize with 80%+ accuracy
-- Review before import
-- No duplicates
-- Rollback capability
+- ✅ Support PDF bank statement upload (max 10MB)
+- ✅ AI-powered categorization using OpenAI GPT-4o-mini
+- ✅ Review parsed transactions before confirming import
+- ✅ Edit AI-suggested categories before confirmation
+- ✅ Cancel import capability (no transactions created)
+- ✅ Confirmed transactions created in Spending module
+- ✅ Track import history per user
 
 #### UC-12: Data Export
 **As a** user  

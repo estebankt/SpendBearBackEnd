@@ -42,19 +42,19 @@ SpendBear is designed as a **Modular Monolith** that can evolve into microservic
 │                  (Authentication)                        │
 └─────────────┬───────────┬───────────┬──────────┬────────┘
               │           │           │          │
-     ┌────────▼──────┐ ┌──▼───────┐ ┌▼────────┐ ┌▼────────┐
-     │   Identity    │ │ Spending │ │ Budgets │ │Analytics│
-     │    Module     │ │  Module  │ │ Module  │ │ Module  │
-     └───────┬───────┘ └────┬─────┘ └────┬────┘ └────┬────┘
-             │              │             │           │
-     ┌───────▼──────────────▼─────────────▼───────────▼─────┐
-     │              Event Bus (Kafka/In-Memory)              │
-     └────────────────────────────────────────────────────────┘
-             │              │             │           │
-     ┌───────▼──────┐ ┌────▼─────┐ ┌────▼────┐ ┌────▼────┐
-     │  PostgreSQL  │ │  Redis   │ │ Outbox  │ │SendGrid │
-     │   (Neon)     │ │  Cache   │ │  Table  │ │  Email  │
-     └──────────────┘ └──────────┘ └─────────┘ └─────────┘
+     ┌────────▼──────┐ ┌──▼───────┐ ┌▼────────┐ ┌▼────────┐ ┌▼───────────────┐
+     │   Identity    │ │ Spending │ │ Budgets │ │Analytics│ │StatementImport │
+     │    Module     │ │  Module  │ │ Module  │ │ Module  │ │    Module       │
+     └───────┬───────┘ └────┬─────┘ └────┬────┘ └────┬────┘ └───────┬────────┘
+             │              │             │           │              │
+     ┌───────▼──────────────▼─────────────▼───────────▼──────────────▼──┐
+     │                  Event Bus (Kafka/In-Memory)                     │
+     └──────────────────────────────────────────────────────────────────┘
+             │              │             │           │              │
+     ┌───────▼──────┐ ┌────▼─────┐ ┌────▼────┐ ┌────▼────┐ ┌──────▼─────┐
+     │  PostgreSQL  │ │  Redis   │ │ Outbox  │ │SendGrid │ │  OpenAI    │
+     │   (Neon)     │ │  Cache   │ │  Table  │ │  Email  │ │  (AI PDF)  │
+     └──────────────┘ └──────────┘ └─────────┘ └─────────┘ └────────────┘
 ```
 
 ## Module Details
@@ -121,6 +121,27 @@ SpendBear is designed as a **Modular Monolith** that can evolve into microservic
 - TransactionUpdatedEvent
 - BudgetCreatedEvent
 
+### Statement Import Module
+**Responsibility**: AI-powered bank statement parsing and transaction import
+
+**Components**:
+- StatementUpload Aggregate (upload lifecycle management)
+- ParsedTransaction Entity (AI-extracted transaction data)
+- OpenAI Statement Parsing Service (GPT-4o-mini)
+- PDF Text Extraction Service (PdfPig)
+- Category Provider (cross-module integration with Spending)
+- Transaction Creation Service (cross-module integration with Spending)
+- Local File Storage Service
+
+**Events Published**:
+- StatementImportConfirmedEvent (contains confirmed transactions for creation in Spending module)
+
+**Events Consumed**: None (initiates workflow, delegates to Spending module on confirmation)
+
+**Cross-Module Dependencies**:
+- Spending.Domain (ICategoryRepository for category lookup)
+- Spending.Application (CreateTransactionHandler for transaction creation on confirm)
+
 ## Data Architecture
 
 ### Database Design
@@ -177,6 +198,33 @@ CREATE TABLE budgets (
     category_id UUID,
     consumed_amount BIGINT DEFAULT 0,
     INDEX idx_user_period (user_id, start_date, end_date)
+);
+
+-- Statement Import Module
+CREATE TABLE statement_import.StatementUploads (
+    id UUID PRIMARY KEY,
+    user_id UUID NOT NULL,
+    original_file_name VARCHAR(500) NOT NULL,
+    stored_file_path VARCHAR(1000) NOT NULL,
+    uploaded_at TIMESTAMP NOT NULL,
+    status INTEGER NOT NULL, -- Uploading, Parsing, PendingReview, Confirmed, Failed, Cancelled
+    error_message VARCHAR(2000),
+    statement_month INTEGER,
+    statement_year INTEGER,
+    INDEX idx_user_id (user_id)
+);
+
+CREATE TABLE statement_import.ParsedTransactions (
+    id UUID PRIMARY KEY,
+    statement_upload_id UUID NOT NULL REFERENCES statement_import.StatementUploads(id) ON DELETE CASCADE,
+    date TIMESTAMP NOT NULL,
+    description VARCHAR(500) NOT NULL,
+    amount BIGINT NOT NULL, -- stored as cents (value * 100)
+    currency VARCHAR(3) NOT NULL,
+    suggested_category_id UUID NOT NULL,
+    confirmed_category_id UUID,
+    original_text VARCHAR(2000),
+    INDEX idx_statement_upload_id (statement_upload_id)
 );
 
 -- Outbox Pattern

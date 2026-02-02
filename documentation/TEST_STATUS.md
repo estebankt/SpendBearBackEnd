@@ -2,19 +2,19 @@
 
 **Date:** 2025-12-01
 **Status:** ✅ Test Infrastructure Complete
-**Test Pass Rate:** 7/21 API tests (33%), 91/94 unit tests (97%)
+**Test Pass Rate:** 7/21 API tests (33%), 119/122 unit tests (97%)
 
 ---
 
 ## Executive Summary
 
 SpendBear now has **comprehensive test coverage** across three testing levels:
-- **Unit Tests:** 91 tests (97% passing) - Domain logic validation
+- **Unit Tests:** 119 tests (97% passing) - Domain logic validation
 - **Integration Tests:** 3 tests (33% passing) - Event flow validation
 - **API Tests:** 21 tests (33% passing) - Full HTTP stack validation
 - **Bash Scripts:** 3 scripts - Manual and DevOps testing
 
-**Total:** 115 automated tests + 3 manual test scripts
+**Total:** 143 automated tests + 3 manual test scripts
 
 The test infrastructure is **production-ready**. Test failures are revealing real validation and event timing issues that require investigation but don't block deployment.
 
@@ -22,7 +22,7 @@ The test infrastructure is **production-ready**. Test failures are revealing rea
 
 ## Test Infrastructure Overview
 
-### 1. Unit Tests (91 tests, 97% passing) ✅
+### 1. Unit Tests (119 tests, 97% passing) ✅
 
 **Location:** `tests/Modules/*/Tests/`
 
@@ -36,6 +36,8 @@ The test infrastructure is **production-ready**. Test failures are revealing rea
 | Notifications.Application.Tests | 11 | ✅ 100% |
 | Analytics.Domain.Tests | 18 | ✅ 100% |
 | Analytics.Application.Tests | 5/8 | ⚠️ 63% |
+| StatementImport.Domain.Tests | 20 | ✅ 100% |
+| StatementImport.Application.Tests | 8 | ✅ 100% |
 
 **Run:** `dotnet test --filter "FullyQualifiedName~Domain|Application"`
 
@@ -86,7 +88,7 @@ The test infrastructure is **production-ready**. Test failures are revealing rea
 
 | Script | Purpose | Duration |
 |--------|---------|----------|
-| `test-api.sh` | Full test suite (13 endpoints) | ~30 sec |
+| `test-api.sh` | Full test suite (19 endpoints) | ~30 sec |
 | `quick-test.sh` | Fast smoke test | ~2 sec |
 | `cleanup-test-data.sh` | Database cleanup | ~1 sec |
 
@@ -252,8 +254,9 @@ builder.Services.AddInfrastructureCore();
 | Budgets | 35 | 1/8 | 0/7 | 43 | 78% |
 | Notifications | 31 | 0 | 0 | 31 | 100% |
 | Analytics | 23/26 | 0/3 | 0/4 | 23/33 | 70% |
+| Statement Import | 28 | 0 | 0 | 28 | 100% |
 | Cross-Module | - | 1/3 | 0/5 | 1/8 | 13% |
-| **Total** | **91/94** | **1/3** | **7/21** | **99/118** | **84%** |
+| **Total** | **119/122** | **1/3** | **7/21** | **127/146** | **87%** |
 
 ---
 
@@ -377,13 +380,13 @@ docker ps -a | grep testcontainers | awk '{print $1}' | xargs docker rm -f
 
 SpendBear has a **robust, multi-layered testing infrastructure** ready for production:
 
-✅ **115 automated tests** across 3 testing levels
+✅ **143 automated tests** across 3 testing levels
 ✅ **3 manual test scripts** for DevOps and quick validation
 ✅ **Complete CI/CD integration** via `dotnet test`
 ✅ **Comprehensive documentation** for all test types
 ✅ **Critical bugs found and fixed** before production
 
-**Current pass rate:** 84% (99/118 tests)
+**Current pass rate:** 87% (127/146 tests)
 **Blocking issues:** None - all failures are in test assertions, not production code
 **Production readiness:** ✅ Ready to deploy
 

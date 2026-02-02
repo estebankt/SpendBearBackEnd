@@ -451,13 +451,137 @@ Export data as CSV/PDF
 - `startDate` - ISO date
 - `endDate` - ISO date
 
+## Statement Import Module Endpoints
+
+### POST /api/statement-import/upload
+Upload a PDF bank statement for AI-powered parsing
+
+**Request:** `multipart/form-data`
+- `file` - PDF file (max 10MB, must be `.pdf` extension)
+
+**Response (201):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440010",
+  "originalFileName": "chase-november-2025.pdf",
+  "uploadedAt": "2025-11-30T12:00:00Z",
+  "status": "PendingReview",
+  "errorMessage": null,
+  "parsedTransactions": [
+    {
+      "id": "550e8400-e29b-41d4-a716-446655440011",
+      "date": "2025-11-15T00:00:00Z",
+      "description": "Starbucks Coffee",
+      "amount": 5.75,
+      "currency": "USD",
+      "suggestedCategoryId": "550e8400-e29b-41d4-a716-446655440001",
+      "confirmedCategoryId": null,
+      "effectiveCategoryId": "550e8400-e29b-41d4-a716-446655440001",
+      "originalText": "STARBUCKS #12345 11/15"
+    }
+  ]
+}
+```
+
+**Errors:**
+- `400` - No file provided, not a PDF, or exceeds 10MB
+- `422` - PDF extraction or AI parsing failed
+
+**Notes:** The upload triggers an AI parsing pipeline: PDF text extraction (PdfPig) → OpenAI GPT-4o-mini categorization → PendingReview status. The `Location` header points to the GET endpoint for the created import.
+
+### GET /api/statement-import/{id}
+Get a specific statement import with parsed transactions
+
+**Response (200):**
+```json
+{
+  "id": "550e8400-e29b-41d4-a716-446655440010",
+  "originalFileName": "chase-november-2025.pdf",
+  "uploadedAt": "2025-11-30T12:00:00Z",
+  "status": "PendingReview",
+  "errorMessage": null,
+  "parsedTransactions": [...]
+}
+```
+
+**Errors:**
+- `404` - Import not found
+- `403` - Not the owner of this import
+
+### GET /api/statement-import
+List all statement imports for the authenticated user
+
+**Response (200):**
+```json
+[
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440010",
+    "originalFileName": "chase-november-2025.pdf",
+    "uploadedAt": "2025-11-30T12:00:00Z",
+    "status": "PendingReview",
+    "transactionCount": 15
+  },
+  {
+    "id": "550e8400-e29b-41d4-a716-446655440012",
+    "originalFileName": "bofa-october-2025.pdf",
+    "uploadedAt": "2025-10-30T12:00:00Z",
+    "status": "Confirmed",
+    "transactionCount": 23
+  }
+]
+```
+
+### PUT /api/statement-import/{id}/transactions
+Update categories for parsed transactions before confirming
+
+**Request:**
+```json
+{
+  "updates": [
+    {
+      "parsedTransactionId": "550e8400-e29b-41d4-a716-446655440011",
+      "newCategoryId": "550e8400-e29b-41d4-a716-446655440003"
+    }
+  ]
+}
+```
+
+**Response (200):** Returns the updated `StatementUploadDto` (same shape as GET).
+
+**Errors:**
+- `404` - Import or transaction not found
+- `409` - Import is not in PendingReview status
+
+### POST /api/statement-import/{id}/confirm
+Confirm the import and create transactions in the Spending module
+
+**Response (204):** No Content
+
+**Behavior:** Creates one transaction per parsed transaction in the Spending module using the effective category (confirmed or AI-suggested). Raises `StatementImportConfirmedEvent`. Status transitions to `Confirmed`.
+
+**Errors:**
+- `404` - Import not found
+- `409` - Import is not in PendingReview status
+- `422` - Transaction creation failed
+
+### POST /api/statement-import/{id}/cancel
+Cancel the import
+
+**Response (204):** No Content
+
+**Behavior:** Status transitions to `Cancelled`. No transactions are created.
+
+**Errors:**
+- `404` - Import not found
+- `409` - Import is not in a cancellable status
+
 ## Webhook Endpoints
 
 ### POST /api/webhooks/auth0
 Auth0 user events webhook
 
 ### POST /api/webhooks/bank-sync
-Bank transaction sync webhook (future)
+Bank transaction sync webhook (note: Statement Import module now provides PDF-based import functionality)
 
 ## Rate Limiting
 
