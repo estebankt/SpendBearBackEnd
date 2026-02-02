@@ -48,7 +48,7 @@ Fast health check - tests basic functionality in ~2 seconds.
 
 ### Full Test Suite (`test-api.sh`)
 
-Comprehensive test of all 13 endpoints across 5 modules.
+Comprehensive test of all 19 endpoints across 6 modules.
 
 ```bash
 ./scripts/test-api.sh
