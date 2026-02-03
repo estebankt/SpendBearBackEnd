@@ -49,12 +49,12 @@ No `.env` file or additional configuration is needed. The `appsettings.json` and
 ### Running Locally
 ```bash
 # Apply database migrations (all 6 modules)
-dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/StatementImport/StatementImport.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure --startup-project src/Api/SpendBear.Api --context IdentityDbContext
+dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api --context SpendingDbContext
+dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure --startup-project src/Api/SpendBear.Api --context BudgetsDbContext
+dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure --startup-project src/Api/SpendBear.Api --context NotificationsDbContext
+dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure --startup-project src/Api/SpendBear.Api --context AnalyticsDbContext
+dotnet ef database update --project src/Modules/StatementImport/StatementImport.Infrastructure --startup-project src/Api/SpendBear.Api --context StatementImportDbContext
 
 # Run API
 dotnet run --project src/Api/SpendBear.Api
@@ -356,18 +356,20 @@ spendbear-appinsights-key
 # Identity module
 dotnet ef migrations add InitialIdentity \
   --project src/Modules/Identity/Identity.Infrastructure \
-  --startup-project src/Api/SpendBear.Api
+  --startup-project src/Api/SpendBear.Api \
+  --context IdentityDbContext
 
 # Spending module
 dotnet ef migrations add InitialSpending \
   --project src/Modules/Spending/Spending.Infrastructure \
-  --startup-project src/Api/SpendBear.Api
+  --startup-project src/Api/SpendBear.Api \
+  --context SpendingDbContext
 ```
 
 ### Applying Migrations
 ```bash
-# Development
-dotnet ef database update
+# Development (specify --project, --startup-project, and --context for each module)
+# See the "Running Locally" section above for the full list of commands
 
 # Production (via migration container)
 docker run --rm \
