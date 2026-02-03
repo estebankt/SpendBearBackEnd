@@ -46,12 +46,12 @@ dotnet restore
 
 Each module has its own schema and migrations. Run all six:
 ```bash
-dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure --startup-project src/Api/SpendBear.Api
-dotnet ef database update --project src/Modules/StatementImport/StatementImport.Infrastructure --startup-project src/Api/SpendBear.Api
+dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure --startup-project src/Api/SpendBear.Api --context IdentityDbContext
+dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api --context SpendingDbContext
+dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure --startup-project src/Api/SpendBear.Api --context BudgetsDbContext
+dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure --startup-project src/Api/SpendBear.Api --context NotificationsDbContext
+dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure --startup-project src/Api/SpendBear.Api --context AnalyticsDbContext
+dotnet ef database update --project src/Modules/StatementImport/StatementImport.Infrastructure --startup-project src/Api/SpendBear.Api --context StatementImportDbContext
 ```
 
 ### 4. Run the API
@@ -235,7 +235,8 @@ dotnet test
 # Add a new migration (example for Spending module)
 dotnet ef migrations add MigrationName \
   --project src/Modules/Spending/Spending.Infrastructure \
-  --startup-project src/Api/SpendBear.Api
+  --startup-project src/Api/SpendBear.Api \
+  --context SpendingDbContext
 
 # Build Docker image
 docker build -t spendbear-api .

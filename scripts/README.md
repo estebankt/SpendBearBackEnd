@@ -11,11 +11,11 @@ Automated testing scripts for the SpendBear API.
 
 2. **Migrations applied**:
    ```bash
-   dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure
-   dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure
-   dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure
-   dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure
-   dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure
+   dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure --startup-project src/Api/SpendBear.Api --context IdentityDbContext
+   dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api --context SpendingDbContext
+   dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure --startup-project src/Api/SpendBear.Api --context BudgetsDbContext
+   dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure --startup-project src/Api/SpendBear.Api --context NotificationsDbContext
+   dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure --startup-project src/Api/SpendBear.Api --context AnalyticsDbContext
    ```
 
 3. **API running**:
@@ -138,7 +138,7 @@ Or use the cleanup script (if created):
 
 ### "Failed to create category/transaction"
 - Check PostgreSQL is running: `docker ps | grep postgres`
-- Verify migrations: `dotnet ef migrations list --project src/Modules/Spending/Spending.Infrastructure`
+- Verify migrations: `dotnet ef migrations list --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api --context SpendingDbContext`
 - Check API logs for errors
 
 ### "Analytics snapshot not found"
