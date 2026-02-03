@@ -23,7 +23,7 @@ public class DevelopmentAuthMiddleware
         // Only apply in development when no authorization header is present
         if (!context.Request.Headers.ContainsKey("Authorization"))
         {
-            var testUserId = "00000000-0000-0000-0000-000000000001"; // Fixed test user ID
+            var testUserId = "11111111-1111-1111-1111-111111111111"; // Matches DevelopmentDataSeeder
 
             var claims = new List<Claim>
             {
