@@ -1,4 +1,4 @@
-# SpendBear - Claude Code Context
+# SpendBear - Gemini Code Context
 
 ## Project Overview
 SpendBear is a robust personal finance management system architected as a Modular Monolith using Domain-Driven Design (DDD) principles, CQRS, and event-driven architecture.
@@ -22,7 +22,7 @@ SpendBear is a robust personal finance management system architected as a Modula
 - **Monitoring**: Prometheus
 
 ### Frontend
-- **Framework**: Next.js 15 with TypeScript
+- **Framework**: Next.js with TypeScript
 - **Deployment**: Vercel
 - **Future**: Swift iOS app
 
