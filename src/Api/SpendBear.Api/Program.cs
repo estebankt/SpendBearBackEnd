@@ -20,6 +20,7 @@ using Microsoft.OpenApi;
 using SpendBear.SharedKernel;
 using SpendBear.Infrastructure.Core.Events;
 using SpendBear.Api.Middleware;
+using SpendBear.Api.Seeding;
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console()
@@ -152,10 +153,14 @@ try
     app.UseHttpsRedirection();
     app.UseCors("AllowFrontend");
 
-    // Development-only: Add test user when no auth token present
+    // Development-only: Seed test data and add test user when no auth token present
     if (app.Environment.IsDevelopment())
     {
-        app.UseMiddleware<SpendBear.Api.Middleware.DevelopmentAuthMiddleware>();
+        await DevelopmentDataSeeder.SeedAsync(
+            app.Configuration,
+            app.Services.GetRequiredService<ILoggerFactory>().CreateLogger("DevelopmentDataSeeder"));
+
+        app.UseMiddleware<DevelopmentAuthMiddleware>();
     }
 
     app.UseAuthentication();

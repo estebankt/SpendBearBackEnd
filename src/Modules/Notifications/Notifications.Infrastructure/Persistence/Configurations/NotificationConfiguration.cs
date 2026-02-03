@@ -1,4 +1,6 @@
+using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Notifications.Domain.Entities;
 using Notifications.Domain.Enums;
@@ -54,7 +56,15 @@ internal sealed class NotificationConfiguration : IEntityTypeConfiguration<Notif
 
         builder.Property(n => n.Metadata)
             .HasColumnType("jsonb")
-            .IsRequired();
+            .IsRequired()
+            .HasConversion(
+                v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+                v => JsonSerializer.Deserialize<Dictionary<string, string>>(v, (JsonSerializerOptions?)null)
+                    ?? new Dictionary<string, string>(),
+                new ValueComparer<Dictionary<string, string>>(
+                    (a, b) => JsonSerializer.Serialize(a, (JsonSerializerOptions?)null) == JsonSerializer.Serialize(b, (JsonSerializerOptions?)null),
+                    v => v.Aggregate(0, (hash, kvp) => HashCode.Combine(hash, kvp.Key.GetHashCode(), kvp.Value.GetHashCode())),
+                    v => new Dictionary<string, string>(v)));
 
         builder.HasIndex(n => n.UserId);
         builder.HasIndex(n => new { n.UserId, n.Status });
