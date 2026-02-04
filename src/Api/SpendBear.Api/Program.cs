@@ -162,27 +162,32 @@ try
     }
     app.UseCors("AllowFrontend");
 
+
     // Apply database migrations on startup
-    using (var scope = app.Services.CreateScope())
+    if (app.Environment.IsDevelopment())
     {
-        var services = scope.ServiceProvider;
-        try
+        using (var scope = app.Services.CreateScope())
         {
-            Log.Information("Applying database migrations...");
-            await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
-            await services.GetRequiredService<SpendingDbContext>().Database.MigrateAsync();
-            await services.GetRequiredService<BudgetsDbContext>().Database.MigrateAsync();
-            await services.GetRequiredService<NotificationsDbContext>().Database.MigrateAsync();
-            await services.GetRequiredService<AnalyticsDbContext>().Database.MigrateAsync();
-            await services.GetRequiredService<StatementImportDbContext>().Database.MigrateAsync();
-            Log.Information("Database migrations applied successfully.");
-        }
-        catch (Exception ex)
-        {
-            Log.Fatal(ex, "An error occurred while migrating the database.");
-            throw;
+            var services = scope.ServiceProvider;
+            try
+            {
+                Log.Information("Applying database migrations...");
+                await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
+                await services.GetRequiredService<SpendingDbContext>().Database.MigrateAsync();
+                await services.GetRequiredService<BudgetsDbContext>().Database.MigrateAsync();
+                await services.GetRequiredService<NotificationsDbContext>().Database.MigrateAsync();
+                await services.GetRequiredService<AnalyticsDbContext>().Database.MigrateAsync();
+                await services.GetRequiredService<StatementImportDbContext>().Database.MigrateAsync();
+                Log.Information("Database migrations applied successfully.");
+            }
+            catch (Exception ex)
+            {
+                Log.Fatal(ex, "An error occurred while migrating the database.");
+                throw;
+            }
         }
     }
+
 
     // Development-only: Seed test data and add test user when no auth token present
     if (app.Environment.IsDevelopment())
@@ -195,6 +200,7 @@ try
     }
 
     app.UseAuthentication();
+    app.UseMiddleware<UserResolutionMiddleware>();
     app.UseAuthorization();
 
     app.MapControllers();
