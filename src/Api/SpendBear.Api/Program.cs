@@ -1,17 +1,23 @@
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.EntityFrameworkCore;
 using SpendBear.Infrastructure.Core;
 using SpendBear.Infrastructure.Core.Extensions;
 using Identity.Infrastructure.Data;
 using Identity.Infrastructure.Extensions;
 using Identity.Application.Extensions;
+using Spending.Infrastructure.Data;
 using Spending.Infrastructure.Extensions;
 using Spending.Application.Extensions;
+using Budgets.Infrastructure.Persistence;
 using Budgets.Infrastructure;
 using Budgets.Application;
+using Notifications.Infrastructure.Persistence;
 using Notifications.Infrastructure;
 using Notifications.Application;
+using Analytics.Infrastructure.Persistence;
 using Analytics.Infrastructure;
 using Analytics.Application;
+using StatementImport.Infrastructure.Persistence;
 using StatementImport.Infrastructure.Extensions;
 using StatementImport.Application.Extensions;
 using Serilog;
@@ -103,7 +109,7 @@ try
       options.AddPolicy("AllowFrontend",
           policy =>
           {
-              policy.WithOrigins("http://localhost:3000")
+              policy.SetIsOriginAllowed(origin => true) // Allow any origin
                     .AllowAnyHeader()
                     .AllowAnyMethod()
                     .AllowCredentials();
@@ -150,8 +156,33 @@ try
 
 
 
-    app.UseHttpsRedirection();
+    if (!app.Environment.IsDevelopment())
+    {
+        app.UseHttpsRedirection();
+    }
     app.UseCors("AllowFrontend");
+
+    // Apply database migrations on startup
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        try
+        {
+            Log.Information("Applying database migrations...");
+            await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<SpendingDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<BudgetsDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<NotificationsDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<AnalyticsDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<StatementImportDbContext>().Database.MigrateAsync();
+            Log.Information("Database migrations applied successfully.");
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "An error occurred while migrating the database.");
+            throw;
+        }
+    }
 
     // Development-only: Seed test data and add test user when no auth token present
     if (app.Environment.IsDevelopment())

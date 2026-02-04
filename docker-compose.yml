@@ -5,15 +5,17 @@ services:
       dockerfile: src/Api/SpendBear.Api/Dockerfile
     ports:
       - "5109:8080"
-      - "7036:8443"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_FORWARDEDHEADERS_ENABLED=true
       - ConnectionStrings__DefaultConnection=Host=postgres;Database=spendbear;Username=postgres;Password=postgres
       - Auth0__Domain=dev-civhz1e8juvue64u.us.auth0.com
       - Auth0__Audience=https://spendbear-api
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
 
   postgres:
     image: postgres:16
@@ -25,11 +27,23 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   redis:
     image: redis:7
     ports:
       - "6379:6379"
+    volumes:
+      - redis_data:/var/lib/redis/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   pgadmin:
     image: dpage/pgadmin4:latest
@@ -41,10 +55,12 @@ services:
     ports:
       - "5050:80"
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     volumes:
       - pgadmin_data:/var/lib/pgadmin
 
 volumes:
   postgres_data:
   pgadmin_data:
+  redis_data:
