@@ -18,35 +18,17 @@ public static class ClaimsPrincipalExtensions
             return userId;
         }
 
-        // Fallback to sub claim (used in client credentials flow)
+        // Fallback to sub claim (used in client credentials flow or non-Auth0 tokens)
         var subClaim = user.FindFirst(ClaimTypes.NameIdentifier)?.Value ?? user.FindFirst("sub")?.Value;
         if (!string.IsNullOrEmpty(subClaim))
         {
-            // For client credentials tokens, sub is like "G2adFM5N3DLBhsJMT7Yj3jtxdECgNwJU@clients"
-            // We'll use a deterministic GUID based on the sub claim for testing
-            // In production, you'd want actual user registration flow
-
             // Try to parse as GUID first (in case it's already a GUID)
             if (Guid.TryParse(subClaim, out var subGuid))
             {
                 return subGuid;
             }
-
-            // For client credentials, create a deterministic test user ID
-            // This allows testing with machine-to-machine tokens
-            return CreateDeterministicGuid(subClaim);
         }
 
         return null;
-    }
-
-    /// <summary>
-    /// Creates a deterministic GUID from a string (for testing purposes)
-    /// </summary>
-    private static Guid CreateDeterministicGuid(string input)
-    {
-        using var md5 = System.Security.Cryptography.MD5.Create();
-        var hash = md5.ComputeHash(System.Text.Encoding.UTF8.GetBytes(input));
-        return new Guid(hash);
     }
 }
