@@ -88,3 +88,7 @@ yarn-error.log*
 *.tmp
 *.temp
 *~
+
+# Uploads
+uploads/
+**/uploads/

@@ -93,7 +93,7 @@ public class OpenAiStatementParsingService : IStatementParsingService
                     new Error("OpenAI.NoTransactions", "AI could not extract any transactions from the statement."));
 
             var result = parsed.Transactions.Select(t => new RawParsedTransaction(
-                t.Date,
+                DateTime.SpecifyKind(t.Date, DateTimeKind.Utc),
                 t.Description,
                 t.Amount,
                 t.Currency ?? "USD",
