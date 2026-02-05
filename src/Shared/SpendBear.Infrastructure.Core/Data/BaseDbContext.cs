@@ -78,5 +78,19 @@ public abstract class BaseDbContext : DbContext, IUnitOfWork
 
         // Ignore domain events collection
         modelBuilder.Ignore<IDomainEvent>();
+
+        // Global DateTime converter for PostgreSQL UTC requirements
+        foreach (var entityType in modelBuilder.Model.GetEntityTypes())
+        {
+            var properties = entityType.GetProperties()
+                .Where(p => p.ClrType == typeof(DateTime) || p.ClrType == typeof(DateTime?));
+
+            foreach (var property in properties)
+            {
+                property.SetValueConverter(new Microsoft.EntityFrameworkCore.Storage.ValueConversion.ValueConverter<DateTime, DateTime>(
+                    v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc),
+                    v => v.Kind == DateTimeKind.Utc ? v : DateTime.SpecifyKind(v, DateTimeKind.Utc)));
+            }
+        }
     }
 }

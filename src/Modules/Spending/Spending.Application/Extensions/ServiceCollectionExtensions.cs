@@ -5,6 +5,9 @@ using Spending.Application.Features.Transactions.CreateTransaction;
 using Spending.Application.Features.Transactions.UpdateTransaction;
 using Spending.Application.Features.Transactions.DeleteTransaction;
 using Spending.Application.Features.Transactions.GetTransactions;
+using Spending.Application.Integrations;
+using StatementImport.Domain.Events;
+using SpendBear.SharedKernel;
 
 namespace Spending.Application.Extensions;
 
@@ -21,6 +24,9 @@ public static class ServiceCollectionExtensions
         // Register category handlers
         services.AddScoped<CreateCategoryHandler>();
         services.AddScoped<GetCategoriesHandler>();
+
+        // Register integration event handlers
+        services.AddScoped<IEventHandler<StatementImportConfirmedEvent>, StatementImportConfirmedEventHandler>();
 
         return services;
     }
