@@ -205,6 +205,9 @@ try
 
     app.MapControllers();
 
+    // Health check endpoint for deployment smoke tests
+    app.MapGet("/health", () => Results.Ok(new { status = "healthy", timestamp = DateTime.UtcNow }));
+
     app.Run();
 }
 catch (Exception ex)
