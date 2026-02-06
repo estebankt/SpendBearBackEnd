@@ -140,11 +140,11 @@ public class BudgetTests
     }
 
     [Theory]
-    [InlineData(BudgetPeriod.Daily, 1)]
-    [InlineData(BudgetPeriod.Weekly, 7)]
-    [InlineData(BudgetPeriod.Monthly, 31)] // December has 31 days
-    [InlineData(BudgetPeriod.Yearly, 365)]
-    public void Create_ShouldCalculateCorrectEndDate(BudgetPeriod period, int expectedDays)
+    [InlineData(BudgetPeriod.Daily)]
+    [InlineData(BudgetPeriod.Weekly)]
+    [InlineData(BudgetPeriod.Monthly)]
+    [InlineData(BudgetPeriod.Yearly)]
+    public void Create_ShouldCalculateCorrectEndDate(BudgetPeriod period)
     {
         // Arrange
         var startDate = new DateTime(2025, 12, 1, 0, 0, 0, DateTimeKind.Utc);

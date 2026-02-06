@@ -66,14 +66,14 @@ public class NotificationTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Create_WithInvalidTitle_ShouldFail(string invalidTitle)
+    public void Create_WithInvalidTitle_ShouldFail(string? invalidTitle)
     {
         // Act
         var result = Notification.Create(
             Guid.NewGuid(),
             NotificationType.BudgetWarning,
             NotificationChannel.Email,
-            invalidTitle,
+            invalidTitle!,
             "Message"
         );
 
@@ -86,7 +86,7 @@ public class NotificationTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("   ")]
-    public void Create_WithInvalidMessage_ShouldFail(string invalidMessage)
+    public void Create_WithInvalidMessage_ShouldFail(string? invalidMessage)
     {
         // Act
         var result = Notification.Create(
@@ -94,7 +94,7 @@ public class NotificationTests
             NotificationType.BudgetWarning,
             NotificationChannel.Email,
             "Title",
-            invalidMessage
+            invalidMessage!
         );
 
         // Assert

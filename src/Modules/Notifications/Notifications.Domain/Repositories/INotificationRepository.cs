@@ -6,8 +6,6 @@ namespace Notifications.Domain.Repositories;
 
 public interface INotificationRepository : IRepository<Notification>
 {
-    Task<Notification?> GetByIdAsync(Guid id, CancellationToken cancellationToken = default);
-
     Task<List<Notification>> GetByUserIdAsync(
         Guid userId,
         NotificationStatus? status = null,
@@ -26,6 +24,4 @@ public interface INotificationRepository : IRepository<Notification>
 
     Task<List<Notification>> GetUnreadByUserIdAsync(Guid userId, CancellationToken cancellationToken = default);
     Task<int> GetUnreadCountAsync(Guid userId, CancellationToken cancellationToken = default);
-    Task AddAsync(Notification notification, CancellationToken cancellationToken = default);
-    Task UpdateAsync(Notification notification, CancellationToken cancellationToken = default);
 }
