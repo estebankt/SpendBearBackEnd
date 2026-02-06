@@ -61,71 +61,37 @@
 
 ## Identity Module Endpoints
 
-### POST /api/v1/auth/register
+### POST /api/identity/register
 Register new user after Auth0 authentication
 
 **Request:**
 ```json
 {
-  "auth0UserId": "auth0|507f1f77bcf86cd799439011",
   "email": "user@example.com",
-  "displayName": "John Doe",
-  "currency": "USD",
-  "locale": "en-US"
+  "firstName": "John",
+  "lastName": "Doe"
 }
 ```
 
-**Response (201):**
+**Response (200):**
 ```json
 {
-  "data": {
-    "userId": "550e8400-e29b-41d4-a716-446655440000",
-    "displayName": "John Doe",
-    "currency": "USD",
-    "locale": "en-US"
-  }
+  "userId": "550e8400-e29b-41d4-a716-446655440000"
 }
 ```
 
-### GET /api/v1/users/profile
+### GET /api/identity/me
 Get current user profile
 
 **Response (200):**
 ```json
 {
-  "data": {
-    "userId": "550e8400-e29b-41d4-a716-446655440000",
-    "email": "user@example.com",
-    "displayName": "John Doe",
-    "currency": "USD",
-    "locale": "en-US",
-    "notificationPreferences": {
-      "email": true,
-      "push": true,
-      "budgetAlerts": {
-        "enabled": true,
-        "thresholds": [50, 75, 90, 100]
-      }
-    },
-    "createdAt": "2024-01-15T10:00:00Z"
-  }
-}
-```
-
-### PUT /api/v1/users/profile
-Update user profile
-
-**Request:**
-```json
-{
-  "displayName": "Jane Doe",
-  "currency": "EUR",
-  "notificationPreferences": {
-    "email": false,
-    "budgetAlerts": {
-      "thresholds": [75, 90]
-    }
-  }
+  "id": "550e8400-e29b-41d4-a716-446655440000",
+  "email": "user@example.com",
+  "firstName": "John",
+  "lastName": "Doe",
+  "createdAt": "2024-01-15T10:00:00Z",
+  "lastLoginAt": "2024-01-15T10:00:00Z"
 }
 ```
 
@@ -721,17 +687,12 @@ ws.send(JSON.stringify({
 ## API Testing
 
 ### Health Check
-```
-GET /health
-GET /health/ready
-GET /health/live
-```
+`GET /health`
+- Returns: `{ "status": "healthy", "timestamp": "2026-02-06T..." }`
 
-### OpenAPI/Swagger
-```
-GET /swagger
-GET /swagger/v1/swagger.json
-```
+### OpenAPI/Swagger (Scalar)
+- UI: `http://localhost:5109/scalar`
+- JSON: `http://localhost:5109/openapi/v1.json`
 
 ## SDK Support (Future)
 
