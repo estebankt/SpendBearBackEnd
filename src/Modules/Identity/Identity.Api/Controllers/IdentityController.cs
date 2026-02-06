@@ -1,5 +1,6 @@
 using Identity.Application.Features.GetProfile;
 using Identity.Application.Features.RegisterUser;
+using Identity.Application.Features.UpdateProfile;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
@@ -15,11 +16,16 @@ public class IdentityController : ControllerBase
 {
     private readonly RegisterUserHandler _registerUserHandler;
     private readonly GetProfileHandler _getProfileHandler;
+    private readonly UpdateProfileHandler _updateProfileHandler;
 
-    public IdentityController(RegisterUserHandler registerUserHandler, GetProfileHandler getProfileHandler)
+    public IdentityController(
+        RegisterUserHandler registerUserHandler,
+        GetProfileHandler getProfileHandler,
+        UpdateProfileHandler updateProfileHandler)
     {
         _registerUserHandler = registerUserHandler;
         _getProfileHandler = getProfileHandler;
+        _updateProfileHandler = updateProfileHandler;
     }
 
     /// <summary>
@@ -73,6 +79,34 @@ public class IdentityController : ControllerBase
 
         return Ok(result.Value);
     }
+    /// <summary>
+    /// Update the authenticated user's profile
+    /// </summary>
+    /// <param name="request">Updated profile details</param>
+    /// <returns>No content on success</returns>
+    /// <response code="200">Profile updated successfully</response>
+    /// <response code="400">Invalid profile data</response>
+    /// <response code="401">Missing or invalid authentication token</response>
+    /// <response code="404">User profile not found</response>
+    [HttpPut("me")]
+    [Authorize]
+    public async Task<IActionResult> UpdateProfile([FromBody] UpdateProfileRequest request)
+    {
+        var auth0Id = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (string.IsNullOrEmpty(auth0Id)) return Unauthorized();
+
+        var command = new UpdateProfileCommand(auth0Id, request.FirstName, request.LastName);
+        var result = await _updateProfileHandler.Handle(command);
+
+        if (result.IsFailure)
+        {
+            return result.Error.Code == "User.NotFound"
+                ? NotFound(result.Error)
+                : BadRequest(result.Error);
+        }
+
+        return Ok();
+    }
 }
 
 /// <summary>
@@ -82,3 +116,10 @@ public class IdentityController : ControllerBase
 /// <param name="FirstName">User's first name</param>
 /// <param name="LastName">User's last name</param>
 public record RegisterRequest(string Email, string FirstName, string LastName);
+
+/// <summary>
+/// Update profile request
+/// </summary>
+/// <param name="FirstName">User's first name</param>
+/// <param name="LastName">User's last name</param>
+public record UpdateProfileRequest(string FirstName, string LastName);

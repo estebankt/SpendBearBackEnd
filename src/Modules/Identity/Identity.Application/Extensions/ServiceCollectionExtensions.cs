@@ -1,6 +1,7 @@
 using FluentValidation;
 using Identity.Application.Features.GetProfile;
 using Identity.Application.Features.RegisterUser;
+using Identity.Application.Features.UpdateProfile;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Identity.Application.Extensions;
@@ -13,6 +14,7 @@ public static class ServiceCollectionExtensions
         
         services.AddScoped<RegisterUserHandler>();
         services.AddScoped<GetProfileHandler>();
+        services.AddScoped<UpdateProfileHandler>();
         
         return services;
     }
