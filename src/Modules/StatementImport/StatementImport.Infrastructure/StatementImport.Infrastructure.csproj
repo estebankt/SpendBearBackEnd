@@ -5,7 +5,6 @@
     <ProjectReference Include="..\StatementImport.Domain\StatementImport.Domain.csproj" />
     <ProjectReference Include="..\..\..\Shared\SpendBear.Infrastructure.Core\SpendBear.Infrastructure.Core.csproj" />
     <ProjectReference Include="..\..\Spending\Spending.Domain\Spending.Domain.csproj" />
-    <ProjectReference Include="..\..\Spending\Spending.Application\Spending.Application.csproj" />
   </ItemGroup>
 
   <PropertyGroup>

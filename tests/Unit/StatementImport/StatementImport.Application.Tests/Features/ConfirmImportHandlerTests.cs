@@ -12,7 +12,6 @@ public class ConfirmImportHandlerTests
 {
     private readonly Mock<IStatementUploadRepository> _repositoryMock = new();
     private readonly Mock<IStatementImportUnitOfWork> _unitOfWorkMock = new();
-    private readonly Mock<ITransactionCreationService> _transactionServiceMock = new();
     private readonly ConfirmImportHandler _handler;
     private readonly Guid _userId = Guid.NewGuid();
 
@@ -20,29 +19,21 @@ public class ConfirmImportHandlerTests
     {
         _handler = new ConfirmImportHandler(
             _repositoryMock.Object,
-            _unitOfWorkMock.Object,
-            _transactionServiceMock.Object);
+            _unitOfWorkMock.Object);
     }
 
     [Fact]
-    public async Task Handle_HappyPath_ShouldConfirmAndCreateTransactions()
+    public async Task Handle_HappyPath_ShouldConfirmAndSave()
     {
         var upload = CreateUploadInPendingReview();
 
         _repositoryMock.Setup(x => x.GetByIdWithTransactionsAsync(upload.Id, default))
             .ReturnsAsync(upload);
 
-        _transactionServiceMock.Setup(x => x.CreateTransactionAsync(
-                _userId, It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<DateTime>(),
-                It.IsAny<string>(), It.IsAny<Guid>(), default))
-            .ReturnsAsync(Result.Success());
-
         var result = await _handler.Handle(upload.Id, _userId);
 
         result.IsSuccess.Should().BeTrue();
-        _transactionServiceMock.Verify(x => x.CreateTransactionAsync(
-            _userId, It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<DateTime>(),
-            It.IsAny<string>(), It.IsAny<Guid>(), default), Times.Exactly(2));
+        _repositoryMock.Verify(x => x.UpdateAsync(upload, default), Times.Once);
         _unitOfWorkMock.Verify(x => x.SaveChangesAsync(default), Times.Once);
     }
 
@@ -70,25 +61,6 @@ public class ConfirmImportHandlerTests
 
         result.IsFailure.Should().BeTrue();
         result.Error.Code.Should().Be("StatementImport.NotAuthorized");
-    }
-
-    [Fact]
-    public async Task Handle_TransactionCreationFails_ShouldFail()
-    {
-        var upload = CreateUploadInPendingReview();
-
-        _repositoryMock.Setup(x => x.GetByIdWithTransactionsAsync(upload.Id, default))
-            .ReturnsAsync(upload);
-
-        _transactionServiceMock.Setup(x => x.CreateTransactionAsync(
-                _userId, It.IsAny<decimal>(), It.IsAny<string>(), It.IsAny<DateTime>(),
-                It.IsAny<string>(), It.IsAny<Guid>(), default))
-            .ReturnsAsync(Result.Failure(new Error("Transaction.Error", "Failed")));
-
-        var result = await _handler.Handle(upload.Id, _userId);
-
-        result.IsFailure.Should().BeTrue();
-        result.Error.Code.Should().Be("StatementImport.TransactionCreationFailed");
     }
 
     private StatementUpload CreateUploadInPendingReview()

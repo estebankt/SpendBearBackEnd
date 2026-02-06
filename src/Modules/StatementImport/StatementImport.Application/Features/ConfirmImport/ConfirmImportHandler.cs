@@ -8,16 +8,13 @@ public sealed class ConfirmImportHandler
 {
     private readonly IStatementUploadRepository _repository;
     private readonly IStatementImportUnitOfWork _unitOfWork;
-    private readonly ITransactionCreationService _transactionCreationService;
 
     public ConfirmImportHandler(
         IStatementUploadRepository repository,
-        IStatementImportUnitOfWork unitOfWork,
-        ITransactionCreationService transactionCreationService)
+        IStatementImportUnitOfWork unitOfWork)
     {
         _repository = repository;
         _unitOfWork = unitOfWork;
-        _transactionCreationService = transactionCreationService;
     }
 
     public async Task<Result> Handle(
@@ -37,21 +34,8 @@ public sealed class ConfirmImportHandler
         if (confirmResult.IsFailure)
             return confirmResult;
 
-        // Create transactions in Spending module
-        foreach (var pt in upload.ParsedTransactions)
-        {
-            var createResult = await _transactionCreationService.CreateTransactionAsync(
-                userId,
-                pt.Amount,
-                pt.Currency,
-                pt.Date,
-                pt.Description,
-                pt.EffectiveCategoryId,
-                cancellationToken);
-
-            if (createResult.IsFailure)
-                return Result.Failure(StatementImportErrors.TransactionCreationFailed);
-        }
+        // Transaction creation is handled by StatementImportConfirmedEvent
+        // dispatched during SaveChangesAsync via the Spending module's event handler
 
         await _repository.UpdateAsync(upload, cancellationToken);
         await _unitOfWork.SaveChangesAsync(cancellationToken);

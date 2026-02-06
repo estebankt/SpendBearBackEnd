@@ -10,6 +10,5 @@ public static class StatementImportErrors
     public static readonly Error PdfExtractionFailed = new("StatementImport.PdfExtractionFailed", "Failed to extract text from the PDF.");
     public static readonly Error AiParsingFailed = new("StatementImport.AiParsingFailed", "Failed to parse the statement using AI.");
     public static readonly Error NoTransactionsParsed = new("StatementImport.NoTransactions", "No transactions were found in the statement.");
-    public static readonly Error TransactionCreationFailed = new("StatementImport.TransactionCreationFailed", "Failed to create one or more transactions.");
     public static readonly Error FileStorageFailed = new("StatementImport.FileStorageFailed", "Failed to store the uploaded file.");
 }
