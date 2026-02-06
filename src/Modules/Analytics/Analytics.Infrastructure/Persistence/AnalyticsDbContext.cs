@@ -1,6 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Analytics.Domain.Entities;
 using SpendBear.Infrastructure.Core.Data;
+using SpendBear.SharedKernel;
 using Analytics.Infrastructure.Persistence.Configurations;
 using Analytics.Application.Abstractions;
 
@@ -8,8 +9,8 @@ namespace Analytics.Infrastructure.Persistence;
 
 public sealed class AnalyticsDbContext : BaseDbContext, IAnalyticsUnitOfWork
 {
-    public AnalyticsDbContext(DbContextOptions<AnalyticsDbContext> options)
-        : base(options)
+    public AnalyticsDbContext(DbContextOptions<AnalyticsDbContext> options, IDomainEventDispatcher domainEventDispatcher)
+        : base(options, domainEventDispatcher)
     {
     }
 

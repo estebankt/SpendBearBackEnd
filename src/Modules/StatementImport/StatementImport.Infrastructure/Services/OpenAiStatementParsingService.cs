@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -107,14 +108,24 @@ public class OpenAiStatementParsingService : IStatementParsingService
                 return Result.Failure<List<RawParsedTransaction>>(
                     new Error("OpenAI.NoTransactions", "AI could not extract any transactions from the statement."));
 
-            var result = parsed.Transactions.Select(t => new RawParsedTransaction(
-                DateTime.SpecifyKind(t.Date, DateTimeKind.Utc),
-                t.Description,
-                t.Amount,
-                t.Currency ?? "USD",
-                t.SuggestedCategoryName ?? string.Empty,
-                t.OriginalText
-            )).ToList();
+            var result = new List<RawParsedTransaction>();
+            foreach (var t in parsed.Transactions)
+            {
+                if (!TryParseDate(t.Date, out var date))
+                {
+                    _logger.LogWarning("Skipping transaction with unparseable date: {Date}", t.Date);
+                    continue;
+                }
+
+                result.Add(new RawParsedTransaction(
+                    DateTime.SpecifyKind(date, DateTimeKind.Utc),
+                    t.Description,
+                    t.Amount,
+                    t.Currency ?? "USD",
+                    t.SuggestedCategoryName ?? string.Empty,
+                    t.OriginalText
+                ));
+            }
 
             return Result.Success(result);
         }
@@ -133,11 +144,40 @@ public class OpenAiStatementParsingService : IStatementParsingService
 
     private sealed class OpenAiTransaction
     {
-        public DateTime Date { get; set; }
+        public string Date { get; set; } = string.Empty;
         public string Description { get; set; } = string.Empty;
         public decimal Amount { get; set; }
         public string? Currency { get; set; }
         public string? SuggestedCategoryName { get; set; }
         public string? OriginalText { get; set; }
+    }
+
+    private static readonly string[] DateFormats =
+    [
+        "yyyy-MM-dd",
+        "MM/dd/yyyy",
+        "M/d/yyyy",
+        "MM-dd-yyyy",
+        "dd/MM/yyyy",
+        "d/M/yyyy",
+        "MMMM d, yyyy",
+        "MMMM dd, yyyy",
+        "MMM d, yyyy",
+        "MMM dd, yyyy",
+        "yyyy/MM/dd"
+    ];
+
+    private static bool TryParseDate(string? value, out DateTime result)
+    {
+        result = default;
+        if (string.IsNullOrWhiteSpace(value))
+            return false;
+
+        return DateTime.TryParseExact(
+            value.Trim(),
+            DateFormats,
+            CultureInfo.InvariantCulture,
+            DateTimeStyles.None,
+            out result);
     }
 }

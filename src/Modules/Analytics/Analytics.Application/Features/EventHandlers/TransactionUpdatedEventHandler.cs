@@ -41,11 +41,11 @@ public sealed class TransactionUpdatedEventHandler : IEventHandler<TransactionUp
         {
             if (@event.OldType == TransactionType.Income)
             {
-                oldSnapshot.AddExpense(@event.OldCategoryId, @event.OldAmount); // Reverse income by adding as expense
+                oldSnapshot.RemoveIncome(@event.OldCategoryId, @event.OldAmount);
             }
             else // OldType was Expense
             {
-                oldSnapshot.AddIncome(@event.OldCategoryId, @event.OldAmount); // Reverse expense by adding as income
+                oldSnapshot.RemoveExpense(@event.OldCategoryId, @event.OldAmount);
             }
             await _analyticSnapshotRepository.UpdateAsync(oldSnapshot, cancellationToken);
         }

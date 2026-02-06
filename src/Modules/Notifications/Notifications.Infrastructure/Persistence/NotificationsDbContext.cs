@@ -2,14 +2,15 @@ using Microsoft.EntityFrameworkCore;
 using Notifications.Domain.Entities;
 using Notifications.Infrastructure.Persistence.Configurations;
 using SpendBear.Infrastructure.Core.Data;
+using SpendBear.SharedKernel;
 using Notifications.Application.Abstractions;
 
 namespace Notifications.Infrastructure.Persistence;
 
 public sealed class NotificationsDbContext : BaseDbContext, INotificationsUnitOfWork
 {
-    public NotificationsDbContext(DbContextOptions<NotificationsDbContext> options)
-        : base(options)
+    public NotificationsDbContext(DbContextOptions<NotificationsDbContext> options, IDomainEventDispatcher domainEventDispatcher)
+        : base(options, domainEventDispatcher)
     {
     }
 

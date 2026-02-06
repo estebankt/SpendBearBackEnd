@@ -1,13 +1,15 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using SpendBear.Infrastructure.Core.Data;
+using SpendBear.SharedKernel;
 using Spending.Application.Abstractions;
 
 namespace Spending.Infrastructure.Data;
 
 public class SpendingDbContext : BaseDbContext, ISpendingUnitOfWork
 {
-    public SpendingDbContext(DbContextOptions<SpendingDbContext> options) : base(options)
+    public SpendingDbContext(DbContextOptions<SpendingDbContext> options, IDomainEventDispatcher domainEventDispatcher)
+        : base(options, domainEventDispatcher)
     {
     }
 

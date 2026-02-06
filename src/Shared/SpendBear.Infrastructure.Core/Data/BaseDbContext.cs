@@ -1,8 +1,5 @@
 using Microsoft.EntityFrameworkCore;
 using SpendBear.SharedKernel;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.EntityFrameworkCore.Infrastructure; // Added this
 
 namespace SpendBear.Infrastructure.Core.Data;
 
@@ -12,8 +9,11 @@ namespace SpendBear.Infrastructure.Core.Data;
 /// </summary>
 public abstract class BaseDbContext : DbContext, IUnitOfWork
 {
-    protected BaseDbContext(DbContextOptions options) : base(options)
+    private readonly IDomainEventDispatcher _domainEventDispatcher;
+
+    protected BaseDbContext(DbContextOptions options, IDomainEventDispatcher domainEventDispatcher) : base(options)
     {
+        _domainEventDispatcher = domainEventDispatcher;
     }
 
     /// <summary>
@@ -21,14 +21,6 @@ public abstract class BaseDbContext : DbContext, IUnitOfWork
     /// </summary>
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        var domainEventDispatcher = ChangeTracker.Context.GetService<IDomainEventDispatcher>();
-        
-        // Ensure the dispatcher is available
-        if (domainEventDispatcher == null)
-        {
-            throw new InvalidOperationException("IDomainEventDispatcher is not registered or cannot be resolved.");
-        }
-
         // Get all aggregate roots with domain events
         var aggregatesWithEvents = ChangeTracker
             .Entries<AggregateRoot>()
@@ -46,7 +38,7 @@ public abstract class BaseDbContext : DbContext, IUnitOfWork
 
         foreach (var domainEvent in domainEvents)
         {
-            await domainEventDispatcher.DispatchAsync(domainEvent, cancellationToken);
+            await _domainEventDispatcher.DispatchAsync(domainEvent, cancellationToken);
         }
 
         foreach (var aggregate in aggregatesWithEvents)

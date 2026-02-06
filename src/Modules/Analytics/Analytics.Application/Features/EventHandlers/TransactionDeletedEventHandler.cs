@@ -38,11 +38,11 @@ public sealed class TransactionDeletedEventHandler : IEventHandler<TransactionDe
             // Reverse the impact of the deleted transaction
             if (@event.Type == TransactionType.Income)
             {
-                existingSnapshot.AddExpense(@event.CategoryId, @event.Amount); // Reverse income by adding as expense
+                existingSnapshot.RemoveIncome(@event.CategoryId, @event.Amount);
             }
             else // Type was Expense
             {
-                existingSnapshot.AddIncome(@event.CategoryId, @event.Amount); // Reverse expense by adding as income
+                existingSnapshot.RemoveExpense(@event.CategoryId, @event.Amount);
             }
             await _analyticSnapshotRepository.UpdateAsync(existingSnapshot, cancellationToken);
             await _unitOfWork.SaveChangesAsync(cancellationToken);
