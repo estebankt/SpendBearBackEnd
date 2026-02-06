@@ -30,9 +30,10 @@ The SpendBear backend has successfully implemented **6 production-ready modules*
 
 **Endpoints (2):**
 - `POST /api/identity/register` - Register new user
-- `GET /api/identity/profile` - Get user profile
+- `GET /api/identity/me` - Get current user profile
 
-**Status:** Production-ready, no tests yet
+**Status:** Production-ready
+**Summary:** [IDENTITY_MODULE_SUMMARY.md](./IDENTITY_MODULE_SUMMARY.md)
 
 ---
 
@@ -169,6 +170,14 @@ The SpendBear backend has successfully implemented **6 production-ready modules*
 - Application: 8/8 tests ✅ (UploadStatementHandlerTests: 4, ConfirmImportHandlerTests: 4)
 
 **Status:** Production-ready with full test coverage
+
+---
+
+### 7. Utility Endpoints ✅
+**Purpose:** System monitoring and diagnostics
+
+**Endpoints:**
+- `GET /health` - Returns basic system health status (JSON)
 
 ---
 
