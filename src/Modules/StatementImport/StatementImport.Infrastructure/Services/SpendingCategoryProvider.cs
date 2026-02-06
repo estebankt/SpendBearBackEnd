@@ -226,6 +226,16 @@ public class SpendingCategoryProvider : ICategoryProvider
         ["Pet Food"] = "Pet Care",
         ["Pet Supplies"] = "Pet Care",
 
+        // Taxes
+        ["Tax"] = "Taxes",
+        ["Income Tax"] = "Taxes",
+        ["Property Tax"] = "Taxes",
+        ["Sales Tax"] = "Taxes",
+        ["State Tax"] = "Taxes",
+        ["Federal Tax"] = "Taxes",
+        ["Tax Payment"] = "Taxes",
+        ["Tax Preparation"] = "Taxes",
+
         // Miscellaneous
         ["Other"] = "Miscellaneous",
         ["General"] = "Miscellaneous",
