@@ -7,7 +7,6 @@
 **/.vscode
 **/.idea
 **/TestResults
-**/appsettings.Development.json
 **/appsettings.Local.json
 **/*.user
 Dockerfile
