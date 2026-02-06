@@ -1,12 +1,14 @@
 using System.Reflection;
 using Microsoft.EntityFrameworkCore;
 using SpendBear.Infrastructure.Core.Data;
+using SpendBear.SharedKernel;
 
 namespace Identity.Infrastructure.Data;
 
 public class IdentityDbContext : BaseDbContext
 {
-    public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options)
+    public IdentityDbContext(DbContextOptions<IdentityDbContext> options, IDomainEventDispatcher domainEventDispatcher)
+        : base(options, domainEventDispatcher)
     {
     }
 

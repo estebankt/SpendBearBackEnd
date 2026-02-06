@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using Analytics.Domain.Entities;
 using Analytics.Domain.Enums;
@@ -34,21 +35,26 @@ public class AnalyticSnapshotConfiguration : IEntityTypeConfiguration<AnalyticSn
         builder.Property(s => s.NetBalance)
             .HasColumnType("decimal(18,2)");
 
+        var dictionaryComparer = new ValueComparer<Dictionary<Guid, decimal>>(
+            (a, b) => a != null && b != null && a.Count == b.Count && !a.Except(b).Any(),
+            v => v.Aggregate(0, (hash, kvp) => HashCode.Combine(hash, kvp.Key, kvp.Value)),
+            v => new Dictionary<Guid, decimal>(v));
+
         builder.Property(s => s.SpendingByCategory)
-            .HasColumnType("jsonb") // Store dictionary as JSONB
+            .HasColumnType("jsonb")
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, decimal>>(v, (System.Text.Json.JsonSerializerOptions?)null)
-                     ?? new Dictionary<Guid, decimal>()
-            );
+                     ?? new Dictionary<Guid, decimal>())
+            .Metadata.SetValueComparer(dictionaryComparer);
 
         builder.Property(s => s.IncomeByCategory)
-            .HasColumnType("jsonb") // Store dictionary as JSONB
+            .HasColumnType("jsonb")
             .HasConversion(
                 v => System.Text.Json.JsonSerializer.Serialize(v, (System.Text.Json.JsonSerializerOptions?)null),
                 v => System.Text.Json.JsonSerializer.Deserialize<Dictionary<Guid, decimal>>(v, (System.Text.Json.JsonSerializerOptions?)null)
-                     ?? new Dictionary<Guid, decimal>()
-            );
+                     ?? new Dictionary<Guid, decimal>())
+            .Metadata.SetValueComparer(dictionaryComparer);
 
         // Ensure unique constraint for UserId, SnapshotDate, and Period to prevent duplicate snapshots
         builder.HasIndex(s => new { s.UserId, s.SnapshotDate, s.Period })

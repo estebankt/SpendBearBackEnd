@@ -97,6 +97,29 @@ public class AnalyticSnapshot : AggregateRoot
         {
             SpendingByCategory.Add(categoryId, amount);
         }
-        // Add domain event if needed
+    }
+
+    public void RemoveIncome(Guid categoryId, decimal amount)
+    {
+        TotalIncome -= amount;
+        NetBalance -= amount;
+        if (IncomeByCategory.ContainsKey(categoryId))
+        {
+            IncomeByCategory[categoryId] -= amount;
+            if (IncomeByCategory[categoryId] <= 0)
+                IncomeByCategory.Remove(categoryId);
+        }
+    }
+
+    public void RemoveExpense(Guid categoryId, decimal amount)
+    {
+        TotalExpense -= amount;
+        NetBalance += amount;
+        if (SpendingByCategory.ContainsKey(categoryId))
+        {
+            SpendingByCategory[categoryId] -= amount;
+            if (SpendingByCategory[categoryId] <= 0)
+                SpendingByCategory.Remove(categoryId);
+        }
     }
 }
