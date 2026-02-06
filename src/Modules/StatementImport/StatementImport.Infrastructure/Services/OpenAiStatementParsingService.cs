@@ -34,25 +34,40 @@ public class OpenAiStatementParsingService : IStatementParsingService
 
             var model = _configuration["OpenAI:Model"] ?? "gpt-4o-mini";
 
-            var categoriesText = string.Join("\n", availableCategories.Select(c =>
-                $"- {c.Name}" + (string.IsNullOrWhiteSpace(c.Description) ? "" : $" ({c.Description})")));
+            var categoryNames = string.Join(", ", availableCategories.Select(c => $"\"{c.Name}\""));
 
             var systemPrompt = $"""
-                You are a financial transaction parser. You will receive the text content of a credit card statement. Extract all individual transactions and categorize each one.
+                You are a financial transaction parser. You will receive the text content of a credit card or bank statement. Extract ONLY individual purchase/charge transactions.
 
                 For each transaction, return:
                 - date: the transaction date in ISO 8601 format (YYYY-MM-DD)
-                - description: a clean, concise description of the transaction
+                - description: a clean, concise merchant/description of the transaction
                 - amount: the transaction amount as a positive decimal number
                 - currency: the currency code (default USD if not specified)
-                - suggestedCategoryName: one of the available categories listed below
+                - suggestedCategoryName: MUST be one of the exact category names from the list below — copy the name verbatim
                 - originalText: the original line(s) from the statement
 
-                Available categories:
-                {categoriesText}
+                ALLOWED CATEGORIES (use EXACTLY one of these, verbatim):
+                [{categoryNames}]
 
-                Return your response as a JSON object with a "transactions" array. If you cannot determine a category, use "Miscellaneous".
-                Only include purchases/charges. Do NOT include payments, credits, balance transfers, or fees.
+                IMPORTANT RULES:
+                1. suggestedCategoryName MUST be one of the allowed categories listed above, spelled exactly as shown. Pick the closest match.
+                2. Do NOT invent category names or use synonyms. If unsure, use "Miscellaneous" only as an absolute last resort.
+
+                EXCLUDE all of the following — these are NOT transactions:
+                - Payments, credits, refunds, balance transfers
+                - "Total Purchases", "Total This Period", any subtotal or total line
+                - "Previous Balance", "New Balance", "Closing Balance", "Opening Balance"
+                - "Minimum Payment Due", "Payment Due Date"
+                - "Finance Charge", "Interest Charge", "Interest Charged"
+                - "Late Fee", "Annual Fee", "Membership Fee", "Over Limit Fee", "Return Check Fee"
+                - "Credit Limit", "Available Credit", "Cash Advance Limit"
+                - "Year-to-Date Totals", "YTD", any year-to-date summary
+                - "Promotional Balance", "Deferred Interest"
+                - "Account Number", "Statement Date", any header/footer metadata
+                - Any line that is clearly a summary, aggregate, or informational row rather than an individual merchant charge
+
+                Return your response as a JSON object with a "transactions" array.
                 """;
 
             var userPrompt = $"""
@@ -97,7 +112,7 @@ public class OpenAiStatementParsingService : IStatementParsingService
                 t.Description,
                 t.Amount,
                 t.Currency ?? "USD",
-                t.SuggestedCategoryName ?? "Miscellaneous",
+                t.SuggestedCategoryName ?? string.Empty,
                 t.OriginalText
             )).ToList();
 
