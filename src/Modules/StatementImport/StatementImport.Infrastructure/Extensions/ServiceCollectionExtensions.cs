@@ -29,7 +29,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<IPdfTextExtractor, PdfTextExtractor>();
         services.AddScoped<IStatementParsingService, OpenAiStatementParsingService>();
         services.AddScoped<ICategoryProvider, SpendingCategoryProvider>();
-        services.AddScoped<ITransactionCreationService, SpendingTransactionCreationService>();
         services.AddScoped<IFileStorageService, LocalFileStorageService>();
 
         return services;
