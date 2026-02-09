@@ -227,16 +227,20 @@ CREATE TABLE statement_import.ParsedTransactions (
     INDEX idx_statement_upload_id (statement_upload_id)
 );
 
--- Outbox Pattern
-CREATE TABLE outbox_messages (
+-- Outbox Pattern (shared schema)
+CREATE TABLE shared.outbox_messages (
     id UUID PRIMARY KEY,
-    aggregate_id UUID NOT NULL,
-    event_type VARCHAR(255) NOT NULL,
-    payload JSONB NOT NULL,
-    created_at TIMESTAMP NOT NULL,
-    processed_at TIMESTAMP,
-    retry_count INT DEFAULT 0,
-    INDEX idx_unprocessed (processed_at) WHERE processed_at IS NULL
+    event_type TEXT NOT NULL,              -- Assembly-qualified type name
+    payload JSONB NOT NULL,               -- JSON-serialized domain event
+    occurred_on TIMESTAMPTZ NOT NULL,     -- When the event originally occurred
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    processed_at TIMESTAMPTZ NULL,        -- NULL = unprocessed
+    retry_count INTEGER NOT NULL DEFAULT 0,
+    last_error TEXT NULL,                 -- Error from last failed attempt
+    source_module TEXT NOT NULL DEFAULT ''-- Module that generated the event
+    -- Partial indexes:
+    -- ix_outbox_unprocessed ON (created_at ASC) WHERE processed_at IS NULL
+    -- ix_outbox_processed_cleanup ON (processed_at) WHERE processed_at IS NOT NULL
 );
 ```
 
@@ -437,10 +441,12 @@ stages:
 - Less magic/reflection
 
 ### Why Outbox Pattern?
-- Guaranteed event delivery
-- Transactional consistency
-- Resilience to failures
-- Event ordering preservation
+- Guaranteed event delivery — events stored atomically with business data
+- Transactional consistency — no window where data is committed but events are lost
+- Resilience to failures — automatic retry with configurable max attempts
+- Event ordering preservation — processed in `created_at` order
+- Dead letter visibility — failed messages remain in table for investigation
+- See [Outbox Pattern Summary](./OUTBOX_PATTERN_SUMMARY.md) for full implementation details
 
 ### Why PostgreSQL?
 - ACID compliance

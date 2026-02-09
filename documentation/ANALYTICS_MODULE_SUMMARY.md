@@ -9,13 +9,18 @@
 
 ## 📦 What Was Delivered
 
-### 1. Complete API (1 Endpoint)
+### 1. Complete API (2 Endpoints)
 
 #### Analytics
 - `GET /api/analytics/summary/monthly` - Get monthly financial summary
   - Query params: `year` (required), `month` (required)
   - Returns: Income, expenses, net balance, category breakdowns
   - Returns empty summary if no data exists (better UX than 404)
+- `POST /api/analytics/rebuild` - Rebuild analytics snapshots from transaction data
+  - Deletes existing monthly snapshots for the authenticated user
+  - Streams all transactions and recomputes snapshots
+  - Useful for recovery after event processing failures or data drift
+  - See [Outbox Pattern Summary](./OUTBOX_PATTERN_SUMMARY.md) for context
 
 ### 2. Domain-Driven Design Implementation
 
@@ -115,13 +120,15 @@
 
 ## 🏗️ Architecture Highlights
 
-### Event-Driven Architecture
+### Event-Driven Architecture (via Outbox Pattern)
 - **TransactionCreatedEventHandler** - Listens to Spending.Domain.Events.TransactionCreatedEvent
 - **TransactionUpdatedEventHandler** - Listens to Spending.Domain.Events.TransactionUpdatedEvent
 - **TransactionDeletedEventHandler** - Listens to Spending.Domain.Events.TransactionDeletedEvent
 - Implements `IEventHandler<T>` interface for automatic event discovery
 - Automatically creates/updates monthly snapshots when transactions change
 - Uses first day of month for monthly snapshots (e.g., 2025-11-01 for November)
+- Events are now delivered reliably via the Outbox Pattern with automatic retry on failure
+- **RebuildAnalyticsHandler** - Recomputes all snapshots from source transaction data for recovery
 
 ### Snapshot Aggregation Strategy
 ```
@@ -574,6 +581,7 @@ public record MonthlySummaryDto(
 For questions or issues, refer to:
 - [Product Requirements](./PRD.md)
 - [Technical Architecture](./architecture.md)
+- [Outbox Pattern Summary](./OUTBOX_PATTERN_SUMMARY.md)
 - [Spending Module Summary](./SPENDING_MODULE_SUMMARY.md)
 - [Budgets Module Summary](./BUDGETS_MODULE_SUMMARY.md)
 - [Notifications Module Summary](./NOTIFICATIONS_MODULE_SUMMARY.md)
