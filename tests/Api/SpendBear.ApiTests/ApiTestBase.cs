@@ -6,6 +6,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Logging;
+using SpendBear.Infrastructure.Core.Outbox;
 using Testcontainers.PostgreSql;
 using Xunit;
 
@@ -44,8 +45,8 @@ public abstract class ApiTestBase : IAsyncLifetime
                     config.AddInMemoryCollection(new Dictionary<string, string?>
                     {
                         ["ConnectionStrings:DefaultConnection"] = connectionString,
-                        // Disable Serilog for tests to avoid logger conflicts
-                        ["Serilog:MinimumLevel:Default"] = "Fatal"
+                        // Faster outbox polling for tests
+                        ["Outbox:PollingIntervalMs"] = "200"
                     });
                 });
 
@@ -57,10 +58,6 @@ public abstract class ApiTestBase : IAsyncLifetime
 
                 builder.ConfigureTestServices(services =>
                 {
-                    // Ensure event dispatcher is registered
-                    services.AddSingleton<SpendBear.SharedKernel.IDomainEventDispatcher,
-                        SpendBear.Infrastructure.Core.Events.DomainEventDispatcher>();
-
                     // Remove existing DbContext registrations and re-add with test connection string
                     RemoveAndRegisterDbContext<Spending.Infrastructure.Data.SpendingDbContext>(services, connectionString, "spending");
                     RemoveAndRegisterDbContext<Budgets.Infrastructure.Persistence.BudgetsDbContext>(services, connectionString, "budgets");
@@ -72,7 +69,7 @@ public abstract class ApiTestBase : IAsyncLifetime
 
         Client = Factory.CreateClient();
 
-        // Apply migrations
+        // Apply migrations and create outbox table
         await ApplyMigrationsAsync();
     }
 
@@ -92,6 +89,13 @@ public abstract class ApiTestBase : IAsyncLifetime
     private async Task ApplyMigrationsAsync()
     {
         using var scope = Factory.Services.CreateScope();
+
+        // Create outbox table first (OutboxProcessor hosted service may start immediately)
+        var config = scope.ServiceProvider.GetRequiredService<IConfiguration>();
+        var connectionString = config.GetConnectionString("DefaultConnection")!;
+        await OutboxTableInitializer.EnsureOutboxTableAsync(
+            connectionString,
+            Microsoft.Extensions.Logging.Abstractions.NullLogger.Instance);
 
         // Apply migrations for each module
         var spendingDb = scope.ServiceProvider.GetRequiredService<Spending.Infrastructure.Data.SpendingDbContext>();

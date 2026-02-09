@@ -1,49 +1,82 @@
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
+using Npgsql;
 using SpendBear.SharedKernel;
 
 namespace SpendBear.Infrastructure.Core.Data;
 
 /// <summary>
 /// Base DbContext for all module contexts.
-/// Provides common functionality like domain event handling and auditing.
+/// Writes domain events to the outbox table atomically with business data.
 /// </summary>
 public abstract class BaseDbContext : DbContext, IUnitOfWork
 {
-    private readonly IDomainEventDispatcher _domainEventDispatcher;
-
-    protected BaseDbContext(DbContextOptions options, IDomainEventDispatcher domainEventDispatcher) : base(options)
+    private static readonly JsonSerializerOptions JsonOptions = new()
     {
-        _domainEventDispatcher = domainEventDispatcher;
+        Converters = { new JsonStringEnumConverter() }
+    };
+
+    protected BaseDbContext(DbContextOptions options) : base(options)
+    {
     }
 
     /// <summary>
-    /// Saves changes and publishes domain events.
+    /// Saves changes and writes domain events to the outbox table atomically.
     /// </summary>
     public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
     {
-        // Get all aggregate roots with domain events
+        // Collect domain events before saving
         var aggregatesWithEvents = ChangeTracker
             .Entries<AggregateRoot>()
             .Where(e => e.Entity.DomainEvents.Any())
             .Select(e => e.Entity)
             .ToList();
 
-        // Save changes to database
-        var result = await base.SaveChangesAsync(cancellationToken);
-
-        // Dispatch domain events after successful save
         var domainEvents = aggregatesWithEvents
             .SelectMany(aggregate => aggregate.DomainEvents)
             .ToList();
 
-        foreach (var domainEvent in domainEvents)
-        {
-            await _domainEventDispatcher.DispatchAsync(domainEvent, cancellationToken);
-        }
-
+        // Clear events from aggregates before save
         foreach (var aggregate in aggregatesWithEvents)
         {
             aggregate.ClearDomainEvents();
+        }
+
+        // Save business data
+        var result = await base.SaveChangesAsync(cancellationToken);
+
+        // Write outbox messages using the same connection/transaction
+        if (domainEvents.Count > 0)
+        {
+            var connection = Database.GetDbConnection();
+            if (connection.State != System.Data.ConnectionState.Open)
+                await connection.OpenAsync(cancellationToken);
+
+            var transaction = Database.CurrentTransaction?.GetDbTransaction();
+
+            foreach (var domainEvent in domainEvents)
+            {
+                var eventType = domainEvent.GetType();
+                var assemblyQualifiedName = $"{eventType.FullName}, {eventType.Assembly.GetName().Name}";
+                var payload = JsonSerializer.Serialize(domainEvent, eventType, JsonOptions);
+
+                const string sql = """
+                    INSERT INTO shared.outbox_messages (id, event_type, payload, occurred_on, created_at, source_module)
+                    VALUES (@id, @eventType, @payload::jsonb, @occurredOn, @createdAt, @sourceModule)
+                    """;
+
+                await using var command = new NpgsqlCommand(sql, (NpgsqlConnection)connection, (NpgsqlTransaction?)transaction);
+                command.Parameters.AddWithValue("id", domainEvent.EventId);
+                command.Parameters.AddWithValue("eventType", assemblyQualifiedName);
+                command.Parameters.AddWithValue("payload", payload);
+                command.Parameters.AddWithValue("occurredOn", DateTime.SpecifyKind(domainEvent.OccurredOn, DateTimeKind.Utc));
+                command.Parameters.AddWithValue("createdAt", DateTime.UtcNow);
+                command.Parameters.AddWithValue("sourceModule", GetType().Name.Replace("DbContext", ""));
+
+                await command.ExecuteNonQueryAsync(cancellationToken);
+            }
         }
 
         return result;

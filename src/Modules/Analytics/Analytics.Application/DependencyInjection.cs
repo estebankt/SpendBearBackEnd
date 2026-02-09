@@ -1,5 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
-using System.Reflection;
+using Analytics.Application.Features.Commands.RebuildAnalytics;
 using Analytics.Application.Features.EventHandlers;
 using SpendBear.SharedKernel;
 using Spending.Domain.Events;
@@ -15,8 +15,9 @@ public static class DependencyInjection
         services.AddScoped<IEventHandler<TransactionCreatedEvent>, TransactionCreatedEventHandler>();
         services.AddScoped<IEventHandler<TransactionUpdatedEvent>, TransactionUpdatedEventHandler>();
         services.AddScoped<IEventHandler<TransactionDeletedEvent>, TransactionDeletedEventHandler>();
-        
+
         services.AddScoped<Features.Queries.GetMonthlySummary.GetMonthlySummaryHandler>();
+        services.AddScoped<RebuildAnalyticsHandler>();
 
         return services;
     }

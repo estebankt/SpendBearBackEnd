@@ -63,8 +63,8 @@ public class SimpleWorkflowTests : IntegrationTestBase
         await transactionRepo.AddAsync(transaction);
         await unitOfWork.SaveChangesAsync();
 
-        // Give time for event processing
-        await Task.Delay(200);
+        // Give time for outbox event processing
+        await Task.Delay(2000);
 
         // Assert - Analytics snapshot should be created
         var firstDayOfMonth = new DateOnly(transactionDate.Year, transactionDate.Month, 1);
@@ -110,8 +110,11 @@ public class SimpleWorkflowTests : IntegrationTestBase
 
             await transactionRepo.AddAsync(transaction);
             await unitOfWork.SaveChangesAsync();
-            await Task.Delay(100); // Give time for each event to process
+            await Task.Delay(500); // Give time for each outbox event to process
         }
+
+        // Wait for final outbox processing
+        await Task.Delay(2000);
 
         // Assert
         var firstDayOfMonth = new DateOnly(transactionDate.Year, transactionDate.Month, 1);

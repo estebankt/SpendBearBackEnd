@@ -1,4 +1,5 @@
 using Analytics.Application.DTOs;
+using Analytics.Application.Features.Commands.RebuildAnalytics;
 using Analytics.Application.Features.Queries.GetMonthlySummary;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -17,10 +18,14 @@ namespace Analytics.Api.Controllers;
 public class AnalyticsController : ControllerBase
 {
     private readonly GetMonthlySummaryHandler _getMonthlySummaryHandler;
+    private readonly RebuildAnalyticsHandler _rebuildAnalyticsHandler;
 
-    public AnalyticsController(GetMonthlySummaryHandler getMonthlySummaryHandler)
+    public AnalyticsController(
+        GetMonthlySummaryHandler getMonthlySummaryHandler,
+        RebuildAnalyticsHandler rebuildAnalyticsHandler)
     {
         _getMonthlySummaryHandler = getMonthlySummaryHandler;
+        _rebuildAnalyticsHandler = rebuildAnalyticsHandler;
     }
 
     /// <summary>
@@ -56,5 +61,31 @@ public class AnalyticsController : ControllerBase
         }
 
         return Ok(result.Value);
+    }
+
+    /// <summary>
+    /// Rebuild analytics snapshots from transaction data
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Success message when rebuild completes</returns>
+    /// <response code="200">Analytics rebuilt successfully</response>
+    /// <response code="401">Missing or invalid authentication token</response>
+    [HttpPost("rebuild")]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    public async Task<IActionResult> RebuildAnalytics(CancellationToken cancellationToken)
+    {
+        var userId = User.GetUserId();
+        if (userId == null)
+            return Unauthorized(new { Error = "User ID not found in token" });
+
+        var command = new RebuildAnalyticsCommand(userId.Value);
+        var result = await _rebuildAnalyticsHandler.Handle(command, cancellationToken);
+
+        if (result.IsFailure)
+        {
+            return BadRequest(result.Error);
+        }
+
+        return Ok(new { Message = "Analytics rebuilt successfully" });
     }
 }

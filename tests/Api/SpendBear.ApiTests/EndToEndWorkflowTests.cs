@@ -49,8 +49,8 @@ public class EndToEndWorkflowTests : ApiTestBase
         var transactionResponse = await Client.PostAsJsonAsync("/api/spending/transactions", transactionRequest);
         transactionResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
-        // Wait for async event processing (Transaction → Budget, Transaction → Analytics)
-        await Task.Delay(1000);
+        // Wait for async outbox processing (Transaction → Budget, Transaction → Analytics)
+        await Task.Delay(2000);
 
         // Assert - Step 4: Verify analytics snapshot was created
         var year = DateTime.UtcNow.Year;
@@ -150,8 +150,8 @@ public class EndToEndWorkflowTests : ApiTestBase
             await Task.Delay(200); // Small delay between transactions
         }
 
-        // Wait for all events to process
-        await Task.Delay(1000);
+        // Wait for all outbox events to process
+        await Task.Delay(2000);
 
         // Assert - Verify analytics aggregated all transactions
         var year = DateTime.UtcNow.Year;

@@ -39,15 +39,14 @@ public abstract class IntegrationTestBase : IAsyncLifetime
                     // Override connection string with test container
                     config.AddInMemoryCollection(new Dictionary<string, string?>
                     {
-                        ["ConnectionStrings:DefaultConnection"] = connectionString
+                        ["ConnectionStrings:DefaultConnection"] = connectionString,
+                        // Faster outbox polling for tests
+                        ["Outbox:PollingIntervalMs"] = "200"
                     });
                 });
 
                 builder.ConfigureTestServices(services =>
                 {
-                    // Ensure event dispatcher is registered
-                    services.AddSingleton<SpendBear.SharedKernel.IDomainEventDispatcher, SpendBear.Infrastructure.Core.Events.DomainEventDispatcher>();
-
                     // Remove existing DbContext registrations and re-add with test connection string
                     RemoveAndRegisterDbContext<Spending.Infrastructure.Data.SpendingDbContext>(services, connectionString, "spending");
                     RemoveAndRegisterDbContext<Budgets.Infrastructure.Persistence.BudgetsDbContext>(services, connectionString, "budgets");

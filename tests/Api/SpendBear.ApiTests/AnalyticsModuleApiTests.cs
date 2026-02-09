@@ -46,8 +46,8 @@ public class AnalyticsModuleApiTests : ApiTestBase
         };
         await Client.PostAsJsonAsync("/api/spending/transactions", transactionRequest);
 
-        // Wait for async event processing
-        await Task.Delay(500);
+        // Wait for async outbox processing
+        await Task.Delay(2000);
 
         var year = DateTime.UtcNow.Year;
         var month = DateTime.UtcNow.Month;
@@ -101,8 +101,8 @@ public class AnalyticsModuleApiTests : ApiTestBase
         };
         await Client.PostAsJsonAsync("/api/spending/transactions", expenseRequest);
 
-        // Wait for async event processing
-        await Task.Delay(500);
+        // Wait for async outbox processing
+        await Task.Delay(2000);
 
         var year = DateTime.UtcNow.Year;
         var month = DateTime.UtcNow.Month;

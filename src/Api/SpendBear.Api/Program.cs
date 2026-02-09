@@ -23,8 +23,7 @@ using StatementImport.Application.Extensions;
 using Serilog;
 using Scalar.AspNetCore;
 using Microsoft.OpenApi;
-using SpendBear.SharedKernel;
-using SpendBear.Infrastructure.Core.Events;
+using SpendBear.Infrastructure.Core.Outbox;
 using SpendBear.Api.Middleware;
 using SpendBear.Api.Seeding;
 
@@ -96,8 +95,8 @@ try
             return Task.CompletedTask;
         });
     });
-    // Infrastructure Core (Event Dispatcher, etc.)
-    builder.Services.AddInfrastructureCore();
+    // Infrastructure Core (Event Dispatcher, Outbox Processor, etc.)
+    builder.Services.AddInfrastructureCore(builder.Configuration);
 
     builder.Services.AddPostgreSqlContext<IdentityDbContext>(builder.Configuration);
     builder.Services.AddIdentityInfrastructure();
@@ -114,10 +113,6 @@ try
                     .AllowCredentials();
           });
   });
-
-    // Infrastructure Core
-    builder.Services.AddScoped<IDomainEventDispatcher, DomainEventDispatcher>();
-
 
     // Spending Module
     builder.Services.AddSpendingInfrastructure(builder.Configuration);
@@ -178,6 +173,12 @@ try
                 await services.GetRequiredService<AnalyticsDbContext>().Database.MigrateAsync();
                 await services.GetRequiredService<StatementImportDbContext>().Database.MigrateAsync();
                 Log.Information("Database migrations applied successfully.");
+
+                // Ensure outbox table exists
+                var connectionString = app.Configuration.GetConnectionString("DefaultConnection")!;
+                await OutboxTableInitializer.EnsureOutboxTableAsync(
+                    connectionString,
+                    services.GetRequiredService<ILoggerFactory>().CreateLogger("OutboxTableInitializer"));
             }
             catch (Exception ex)
             {
