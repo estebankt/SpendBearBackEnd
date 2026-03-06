@@ -1,0 +1,178 @@
+# azure-pipelines.yml
+# Replaces .github/workflows/azure-deploy.yml
+
+trigger:
+  branches:
+    include:
+      - main
+
+pr:
+  branches:
+    include:
+      - main
+
+variables:
+  DOTNET_VERSION: '10.x'
+  BUILD_CONFIGURATION: 'Release'
+  PACKAGE_PATH: '$(Build.ArtifactStagingDirectory)/publish'
+  STAGING_APP_NAME: 'spendbear-api-dev'
+  PRODUCTION_APP_NAME: 'spendbear-api'
+  AZURE_SERVICE_CONNECTION: 'azure-spendbear'
+
+stages:
+
+# ─────────────────────────────────────────────
+- stage: Build
+  displayName: 'Build & Test'
+  jobs:
+  - job: BuildTest
+    displayName: 'Build, Test, Publish'
+    pool:
+      vmImage: 'ubuntu-latest'
+
+    steps:
+    - task: UseDotNet@2
+      displayName: 'Install .NET $(DOTNET_VERSION)'
+      inputs:
+        version: $(DOTNET_VERSION)
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Restore'
+      inputs:
+        command: restore
+        projects: '**/*.csproj'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Build'
+      inputs:
+        command: build
+        arguments: '--configuration $(BUILD_CONFIGURATION) --no-restore'
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Unit Tests'
+      inputs:
+        command: test
+        arguments: >
+          --configuration $(BUILD_CONFIGURATION)
+          --no-build
+          --filter "FullyQualifiedName~Domain|Application"
+          --logger trx
+          --collect "XPlat Code Coverage"
+          --results-directory $(Agent.TempDirectory)/TestResults
+        publishTestResults: true
+
+    - task: DotNetCoreCLI@2
+      displayName: 'Publish API'
+      inputs:
+        command: publish
+        publishWebProjects: false
+        projects: 'src/Api/SpendBear.Api/SpendBear.Api.csproj'
+        arguments: '--configuration $(BUILD_CONFIGURATION) --no-build --output $(PACKAGE_PATH)'
+        zipAfterPublish: true
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Upload api-package artifact'
+      inputs:
+        PathtoPublish: '$(PACKAGE_PATH)'
+        ArtifactName: 'api-package'
+
+# ─────────────────────────────────────────────
+- stage: DeployStaging
+  displayName: 'Deploy → Staging'
+  dependsOn: Build
+  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.Reason'], 'IndividualCI'))
+  variables:
+  - group: spendbear-staging-vars
+  jobs:
+  - deployment: DeployStaging
+    displayName: 'Deploy to Staging App Service'
+    environment: 'Staging'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            displayName: 'Deploy to spendbear-api-dev'
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              appType: webApp
+              appName: $(STAGING_APP_NAME)
+              package: '$(Pipeline.Workspace)/api-package/**/*.zip'
+
+          - task: AzureAppServiceSettings@1
+            displayName: 'Apply staging app settings'
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              appName: $(STAGING_APP_NAME)
+              appSettings: |
+                [
+                  {"name": "Auth0__Domain",   "value": "$(AUTH0_DOMAIN)",   "slotSetting": false},
+                  {"name": "Auth0__Audience", "value": "$(AUTH0_AUDIENCE)", "slotSetting": false},
+                  {"name": "ConnectionStrings__DefaultConnection", "value": "$(CONNECTIONSTRING_DEFAULTCONNECTION)", "slotSetting": false}
+                ]
+
+          - script: |
+              echo "Waiting for app to start..."
+              sleep 30
+              for i in 1 2 3; do
+                if curl -sf https://$(STAGING_APP_NAME).azurewebsites.net/health; then
+                  echo "✅ Staging smoke test passed"
+                  exit 0
+                fi
+                echo "Attempt $i failed, retrying in 10s..."
+                sleep 10
+              done
+              echo "❌ Health check failed"
+              exit 1
+            displayName: 'Smoke Test'
+
+# ─────────────────────────────────────────────
+- stage: DeployProduction
+  displayName: 'Deploy → Production'
+  dependsOn: DeployStaging
+  condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+  variables:
+  - group: spendbear-production-vars
+  jobs:
+  - deployment: DeployProduction
+    displayName: 'Deploy to Production App Service'
+    environment: 'Production'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - task: AzureWebApp@1
+            displayName: 'Deploy to spendbear-api'
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              appType: webApp
+              appName: $(PRODUCTION_APP_NAME)
+              package: '$(Pipeline.Workspace)/api-package/**/*.zip'
+
+          - task: AzureAppServiceSettings@1
+            displayName: 'Apply production app settings'
+            inputs:
+              azureSubscription: $(AZURE_SERVICE_CONNECTION)
+              appName: $(PRODUCTION_APP_NAME)
+              appSettings: |
+                [
+                  {"name": "Auth0__Domain",   "value": "$(AUTH0_DOMAIN)",   "slotSetting": false},
+                  {"name": "Auth0__Audience", "value": "$(AUTH0_AUDIENCE)", "slotSetting": false},
+                  {"name": "ConnectionStrings__DefaultConnection", "value": "$(CONNECTIONSTRING_DEFAULTCONNECTION)", "slotSetting": false}
+                ]
+
+          - script: |
+              sleep 30
+              for i in 1 2 3; do
+                if curl -sf https://$(PRODUCTION_APP_NAME).azurewebsites.net/health; then
+                  echo "✅ Production smoke test passed"
+                  exit 0
+                fi
+                sleep 10
+              done
+              exit 1
+            displayName: 'Smoke Test'
