@@ -1,6 +1,8 @@
 # SpendBear 🐻💰
 
-> A production-ready personal finance management system built with Domain-Driven Design principles
+> An open source, production-ready personal finance management system built with Domain-Driven Design principles
+
+**SpendBear is open source and welcomes contributions.** See [CONTRIBUTING.md](./CONTRIBUTING.md) to get involved.
 
 ## Overview
 
@@ -381,9 +383,9 @@ MIT License - see [LICENSE](./LICENSE) file
 ![Coverage](https://img.shields.io/badge/coverage-97%25-brightgreen)
 ![.NET](https://img.shields.io/badge/.NET-10-blue)
 ![License](https://img.shields.io/badge/license-MIT-blue)
+![Open Source](https://img.shields.io/badge/open%20source-yes-brightgreen)
+[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange)](./CONTRIBUTING.md)
 
 ---
 
 **SpendBear** - Track spending, tame your budget 🐻
-
-*Built with ❤️ using Claude Code CLI*
