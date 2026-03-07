@@ -1,6 +1,16 @@
 # azure-pipelines.yml
 # Replaces .github/workflows/azure-deploy.yml
 
+parameters:
+  - name: deployTarget
+    displayName: 'Deploy to'
+    type: string
+    default: 'staging'
+    values:
+      - staging
+      - production
+      - none
+
 trigger:
   branches:
     include:
@@ -84,7 +94,15 @@ stages:
 - stage: DeployStaging
   displayName: 'Deploy → Staging'
   dependsOn: Build
-  condition: and(succeeded(), eq(variables['Build.SourceBranch'], 'refs/heads/main'), eq(variables['Build.Reason'], 'IndividualCI'))
+  condition: |
+    and(
+      succeeded(),
+      eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+      or(
+        eq(variables['Build.Reason'], 'IndividualCI'),
+        and(eq(variables['Build.Reason'], 'Manual'), eq('${{ parameters.deployTarget }}', 'staging'))
+      )
+    )
   variables:
   - group: spendbear-staging-vars
   jobs:
@@ -136,7 +154,12 @@ stages:
 - stage: DeployProduction
   displayName: 'Deploy → Production'
   dependsOn: DeployStaging
-  condition: and(succeeded(), eq(variables['Build.Reason'], 'Manual'))
+  condition: |
+    and(
+      succeeded(),
+      eq(variables['Build.Reason'], 'Manual'),
+      eq('${{ parameters.deployTarget }}', 'production')
+    )
   variables:
   - group: spendbear-production-vars
   jobs:
