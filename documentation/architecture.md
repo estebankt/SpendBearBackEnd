@@ -358,23 +358,22 @@ services:
 - **Storage**: Azure Blob Storage (receipts)
 - **CDN**: Azure CDN for static assets
 
-### CI/CD Pipeline
+### CI/CD Pipeline (Azure DevOps)
 ```yaml
 stages:
-  - build:
-      - Restore packages
-      - Build solution
-      - Run unit tests
-  - test:
-      - Run integration tests (TestContainers)
-      - Code coverage check (>80%)
-  - package:
-      - Build Docker image
-      - Push to Azure Container Registry
-  - deploy:
-      - Deploy to staging
-      - Run smoke tests
-      - Deploy to production (manual approval)
+  - Build:
+      - Restore, build, unit tests
+      - dotnet publish → zip artifact
+  - DeployStaging:
+      - Auto on push to main
+      - AzureWebApp@1 to spendbear-api-dev
+      - Apply app settings from variable group
+      - Smoke test /health
+  - DeployProduction:
+      - Manual trigger only (deployTarget=production)
+      - Requires approval gate in Azure DevOps Environments
+      - AzureWebApp@1 to spendbear-api
+      - Smoke test /health
 ```
 
 ## Performance Considerations

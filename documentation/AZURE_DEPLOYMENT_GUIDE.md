@@ -1,18 +1,17 @@
 # SpendBear API - Azure Deployment Guide
 
-**Last Updated:** 2025-12-01
+**Last Updated:** 2026-03-06
 **Target Platform:** Azure App Service
-**CI/CD Options:** Azure DevOps Pipelines OR GitHub Actions
+**CI/CD:** Azure DevOps Pipelines
 
 ---
 
 ## Overview
 
-This guide covers deploying the SpendBear API to Azure using either Azure DevOps Pipelines or GitHub Actions. The deployment follows a multi-environment strategy:
+This guide covers deploying the SpendBear API to Azure using Azure DevOps Pipelines. The deployment follows a two-environment strategy:
 
-- **Development** (`develop` branch) → `spendbear-api-dev`
-- **Staging** (`main` branch) → `spendbear-api-staging`
-- **Production** (manual approval) → `spendbear-api`
+- **Staging** (`main` branch, auto-deploy) → `spendbear-api-dev`
+- **Production** (manual trigger with approval gate) → `spendbear-api`
 
 ---
 
@@ -22,8 +21,6 @@ This guide covers deploying the SpendBear API to Azure using either Azure DevOps
 2. [Azure Resources Setup](#azure-resources-setup)
 3. [Database Configuration](#database-configuration)
 4. [CI/CD Pipeline Setup](#cicd-pipeline-setup)
-   - [Option A: Azure DevOps](#option-a-azure-devops)
-   - [Option B: GitHub Actions](#option-b-github-actions)
 5. [Environment Configuration](#environment-configuration)
 6. [Deployment Steps](#deployment-steps)
 7. [Post-Deployment](#post-deployment)
@@ -95,19 +92,12 @@ az appservice plan create \
 - No custom domain/SSL
 - Suitable for MVP testing only
 
-### 3. Create Web Apps (3 environments)
+### 3. Create Web Apps (2 environments)
 
 ```bash
-# Development Environment
-az webapp create \
-  --name spendbear-api-dev \
-  --resource-group spendbear-rg \
-  --plan spendbear-plan \
-  --runtime "DOTNETCORE:10.0"
-
 # Staging Environment
 az webapp create \
-  --name spendbear-api-staging \
+  --name spendbear-api-dev \
   --resource-group spendbear-rg \
   --plan spendbear-plan \
   --runtime "DOTNETCORE:10.0"
@@ -120,7 +110,7 @@ az webapp create \
   --runtime "DOTNETCORE:10.0"
 ```
 
-**Important:** Web app names must be globally unique. If taken, add suffix like `-yourname`.
+**Important:** Web app names must be globally unique. If taken, add a suffix like `-yourname`.
 
 ### 4. Configure Web Apps
 
@@ -128,11 +118,6 @@ az webapp create \
 # Enable HTTPS only
 az webapp update \
   --name spendbear-api-dev \
-  --resource-group spendbear-rg \
-  --https-only true
-
-az webapp update \
-  --name spendbear-api-staging \
   --resource-group spendbear-rg \
   --https-only true
 
@@ -227,174 +212,88 @@ az postgres flexible-server db create \
 
 ## CI/CD Pipeline Setup
 
-### Option A: Azure DevOps
+The pipeline is defined in `azure-pipelines.yml` at the repo root and runs on Azure DevOps.
 
-#### 1. Create Azure DevOps Project
+### 1. Create Azure DevOps Project
 
-1. Go to [dev.azure.com](https://dev.azure.com)
-2. Create new project: `SpendBear`
-3. Import repository from GitHub (or push code directly)
+1. Go to [dev.azure.com](https://dev.azure.com) and create an organization (e.g. `spendbear`)
+2. Create a project inside it (e.g. `SpendBear`)
+3. **Request the free parallel job grant** at `https://aka.ms/azpipelines-parallelism-request` — select "public project" for 10 free parallel jobs
 
-#### 2. Create Service Connection
+### 2. Create Service Connection
 
-1. Go to **Project Settings** → **Service connections**
-2. Click **New service connection**
-3. Select **Azure Resource Manager**
-4. Choose **Service principal (automatic)**
-5. Select your subscription and resource group
-6. Name: `SpendBear-Azure-Connection`
-7. Grant access to all pipelines
+1. **Project Settings** → **Service connections** → **New service connection**
+2. Select **Azure Resource Manager**
+3. Choose **Workload Identity Federation (automatic)** — no secrets to rotate
+4. Scope to the resource group containing your App Services
+5. Name it exactly: `azure-spendbear`
 
-#### 3. Configure Pipeline Variables
+### 3. Configure Variable Groups
 
-Go to **Pipelines** → **Library** → **Variable groups**
+**Pipelines** → **Library** → **+ Variable group**
 
-**Create Variable Group: `SpendBear-Dev`**
-- `DevDbConnectionString`: Your Neon dev connection string
-- `Auth0Domain`: `dev-civhz1e8juvue64u.us.auth0.com`
-- `Auth0Audience`: `https://spendbear-api`
+**`spendbear-staging-vars`:**
+- `AUTH0_DOMAIN` — your Auth0 domain
+- `AUTH0_AUDIENCE` — `https://spendbear-api`
+- `CONNECTIONSTRING_DEFAULTCONNECTION` — Neon staging connection string
 
-**Create Variable Group: `SpendBear-Staging`**
-- `StagingDbConnectionString`: Your Neon staging connection string
-- `Auth0Domain`: Same as dev
-- `Auth0Audience`: Same as dev
+**`spendbear-production-vars`:**
+- Same keys, production values
 
-**Create Variable Group: `SpendBear-Production`**
-- `ProductionDbConnectionString`: Your Neon production connection string
-- `Auth0Domain`: Same as dev
-- `Auth0Audience`: Same as dev
+Mark sensitive values as secret (padlock icon). Optionally link to Azure Key Vault instead.
 
-#### 4. Update Pipeline Configuration
+### 4. Configure Environments
 
-Edit `azure-pipelines.yml`:
+**Pipelines** → **Environments**
 
-```yaml
-variables:
-  azureSubscription: 'SpendBear-Azure-Connection' # Match your service connection name
-  webAppName: 'spendbear-api' # Match your web app name (without environment suffix)
-  resourceGroupName: 'spendbear-rg'
-```
+1. Create `Staging` environment — no approval needed (auto-deploys on push to main)
+2. Create `Production` environment → **Approvals and checks** → **+ Approvals** → add yourself as approver
 
-#### 5. Create Pipeline
+### 5. Create the Pipeline
 
-1. Go to **Pipelines** → **Create Pipeline**
-2. Select **Azure Repos Git** (or GitHub)
-3. Select your repository
-4. Choose **Existing Azure Pipelines YAML file**
-5. Select `/azure-pipelines.yml`
-6. Click **Run**
+1. **Pipelines** → **New pipeline** → **GitHub (YAML)**
+2. Select your repository and authorize the GitHub connection
+3. Choose **Existing Azure Pipelines YAML file** → `/azure-pipelines.yml`
+4. On first run, authorize the Azure service connection when prompted
 
-#### 6. Configure Environments
+### Pipeline Behaviour
 
-1. Go to **Pipelines** → **Environments**
-2. Create three environments:
-   - `Development` (auto-deploy)
-   - `Staging` (auto-deploy)
-   - `Production` (add approval check)
+| Trigger | Stages |
+|---|---|
+| Push to `main` | Build + Test → Deploy Staging (auto) |
+| Manual run, `deployTarget=staging` (default) | Build + Test → Deploy Staging |
+| Manual run, `deployTarget=production` | Build + Test → Deploy Staging → Approve → Deploy Production |
+| Manual run, `deployTarget=none` | Build + Test only |
 
-**Add Approval for Production:**
-1. Click `Production` environment
-2. Click **⋮** (More options) → **Approvals and checks**
-3. Click **+** → **Approvals**
-4. Add yourself as approver
-5. Save
-
-### Option B: GitHub Actions
-
-#### 1. Get Azure Publish Profiles
-
-```bash
-# Development
-az webapp deployment list-publishing-profiles \
-  --name spendbear-api-dev \
-  --resource-group spendbear-rg \
-  --xml > dev-profile.xml
-
-# Staging
-az webapp deployment list-publishing-profiles \
-  --name spendbear-api-staging \
-  --resource-group spendbear-rg \
-  --xml > staging-profile.xml
-
-# Production
-az webapp deployment list-publishing-profiles \
-  --name spendbear-api \
-  --resource-group spendbear-rg \
-  --xml > production-profile.xml
-```
-
-#### 2. Add GitHub Secrets
-
-Go to your GitHub repository → **Settings** → **Secrets and variables** → **Actions**
-
-**Add Repository Secrets:**
-- `AZURE_WEBAPP_PUBLISH_PROFILE_DEV`: Contents of `dev-profile.xml`
-- `AZURE_WEBAPP_PUBLISH_PROFILE_STAGING`: Contents of `staging-profile.xml`
-- `AZURE_WEBAPP_PUBLISH_PROFILE`: Contents of `production-profile.xml`
-
-**Note:** Copy the ENTIRE XML content including `<?xml version...>` header
-
-#### 3. Configure GitHub Environments
-
-1. Go to **Settings** → **Environments**
-2. Create three environments:
-   - `Development`
-   - `Staging`
-   - `Production`
-
-**Add Protection Rule for Production:**
-1. Click `Production` environment
-2. Check **Required reviewers**
-3. Add yourself as reviewer
-4. Save
-
-#### 4. Enable GitHub Actions
-
-The workflow file `.github/workflows/azure-deploy.yml` is already configured. Just push to trigger:
-
-```bash
-git add .github/workflows/azure-deploy.yml
-git commit -m "ci: Add GitHub Actions deployment workflow"
-git push origin develop
-```
+The `deployTarget` parameter appears as a dropdown when manually running the pipeline from the Azure DevOps UI.
 
 ---
 
 ## Environment Configuration
 
-### Application Settings (All Environments)
+### Application Settings
 
-Configure via Azure Portal or CLI:
+App settings are applied automatically by the pipeline via `AzureAppServiceSettings@1` using values from the variable groups. For manual configuration via CLI:
 
 ```bash
-# Development Environment
+# Staging (spendbear-api-dev)
 az webapp config appsettings set \
   --name spendbear-api-dev \
   --resource-group spendbear-rg \
   --settings \
-    ASPNETCORE_ENVIRONMENT="Development" \
-    ConnectionStrings__DefaultConnection="YOUR_NEON_DEV_CONNECTION_STRING" \
-    Auth0__Domain="dev-civhz1e8juvue64u.us.auth0.com" \
-    Auth0__Audience="https://spendbear-api"
-
-# Staging Environment
-az webapp config appsettings set \
-  --name spendbear-api-staging \
-  --resource-group spendbear-rg \
-  --settings \
     ASPNETCORE_ENVIRONMENT="Staging" \
     ConnectionStrings__DefaultConnection="YOUR_NEON_STAGING_CONNECTION_STRING" \
-    Auth0__Domain="dev-civhz1e8juvue64u.us.auth0.com" \
+    Auth0__Domain="YOUR_AUTH0_DOMAIN" \
     Auth0__Audience="https://spendbear-api"
 
-# Production Environment
+# Production (spendbear-api)
 az webapp config appsettings set \
   --name spendbear-api \
   --resource-group spendbear-rg \
   --settings \
     ASPNETCORE_ENVIRONMENT="Production" \
     ConnectionStrings__DefaultConnection="YOUR_NEON_PRODUCTION_CONNECTION_STRING" \
-    Auth0__Domain="dev-civhz1e8juvue64u.us.auth0.com" \
+    Auth0__Domain="YOUR_AUTH0_DOMAIN" \
     Auth0__Audience="https://spendbear-api"
 ```
 
@@ -503,17 +402,9 @@ chmod +x scripts/migrate-azure.sh
 
 #### Step 2: Deploy Application
 
-**Azure DevOps:**
-1. Push code to `develop` branch
-2. Pipeline triggers automatically
-3. Monitor pipeline run
-4. Check deployment status
-
-**GitHub Actions:**
-1. Push code to `develop` branch
-2. Go to **Actions** tab
-3. Watch workflow execution
-4. Review logs
+1. Push code to `main` branch — pipeline triggers automatically
+2. Monitor the run in **Azure DevOps** → **Pipelines**
+3. Staging deploys automatically; production requires manual approval in the `Production` environment
 
 #### Step 3: Verify Deployment
 
@@ -536,11 +427,8 @@ curl https://spendbear-api-dev.azurewebsites.net/api/spending/categories \
 ### 1. Verify All Services
 
 ```bash
-# Development
-curl https://spendbear-api-dev.azurewebsites.net/health
-
 # Staging
-curl https://spendbear-api-staging.azurewebsites.net/health
+curl https://spendbear-api-dev.azurewebsites.net/health
 
 # Production
 curl https://spendbear-api.azurewebsites.net/health
@@ -763,8 +651,7 @@ az appservice plan update \
 ### Free Tier (MVP Testing)
 - **App Service Plan (F1)**: $0/month
 - **Neon PostgreSQL (Free)**: $0/month
-- **Azure DevOps (Free)**: $0/month (5 users, 1 pipeline)
-- **GitHub Actions**: $0/month (2000 minutes)
+- **Azure DevOps (Free)**: $0/month (public repo, 10 parallel jobs)
 
 **Total MVP Cost: $0/month** ✅
 
@@ -835,15 +722,13 @@ Before going to production:
 - [Neon PostgreSQL Docs](https://neon.tech/docs)
 - [Auth0 Documentation](https://auth0.com/docs)
 - [Azure DevOps Pipelines](https://docs.microsoft.com/en-us/azure/devops/pipelines/)
-- [GitHub Actions](https://docs.github.com/en/actions)
 - [SpendBear API Documentation](../README.md)
 
 ---
 
 **Deployment URLs:**
 
-- **Development:** https://spendbear-api-dev.azurewebsites.net
-- **Staging:** https://spendbear-api-staging.azurewebsites.net
+- **Staging:** https://spendbear-api-dev.azurewebsites.net
 - **Production:** https://spendbear-api.azurewebsites.net
 
-**Support:** Check the [Troubleshooting](#troubleshooting) section or review pipeline logs in Azure DevOps/GitHub Actions.
+**Support:** Check the [Troubleshooting](#troubleshooting) section or review pipeline logs in Azure DevOps.

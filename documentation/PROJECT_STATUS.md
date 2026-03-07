@@ -17,7 +17,7 @@ The SpendBear backend has successfully implemented **6 production-ready modules*
 - ✅ **115+ Tests** - 84% pass rate (99 passing, test infrastructure complete)
 - ✅ **Event-Driven Integration** - Cross-module communication working
 - ✅ **Multi-Layer Testing** - Unit, Integration, API, and Bash script tests
-- ✅ **CI/CD Pipeline** - Azure DevOps + GitHub Actions workflows
+- ✅ **CI/CD Pipeline** - Azure DevOps pipeline (azure-pipelines.yml)
 - ✅ **Production-Ready** - Auth, validation, error handling, migrations, documentation
 - ✅ **Deployment Ready** - Complete Azure deployment guide and pipeline configuration
 
@@ -365,7 +365,6 @@ The SpendBear backend has successfully implemented **6 production-ready modules*
 - [x] Multi-layer test infrastructure (Unit, Integration, API, Bash scripts)
 - [x] Comprehensive module documentation (6 summary files)
 - [x] **Azure DevOps Pipeline** (azure-pipelines.yml)
-- [x] **GitHub Actions Workflow** (.github/workflows/azure-deploy.yml)
 - [x] **Azure Deployment Guide** (AZURE_DEPLOYMENT_GUIDE.md)
 - [x] **Test Status Documentation** (TEST_STATUS.md)
 - [x] **pgAdmin Database Management** (PGADMIN_GUIDE.md)
@@ -405,7 +404,6 @@ The SpendBear backend has successfully implemented **6 production-ready modules*
 **Deployment Documentation:**
 - ✅ [AZURE_DEPLOYMENT_GUIDE.md](./AZURE_DEPLOYMENT_GUIDE.md) - Complete Azure deployment guide (700+ lines)
 - ✅ [azure-pipelines.yml](../azure-pipelines.yml) - Azure DevOps pipeline configuration
-- ✅ [.github/workflows/azure-deploy.yml](../.github/workflows/azure-deploy.yml) - GitHub Actions workflow
 
 **Database Documentation:**
 - ✅ [PGADMIN_GUIDE.md](./PGADMIN_GUIDE.md) - pgAdmin setup and usage guide (375+ lines)
@@ -461,7 +459,7 @@ The SpendBear backend has reached **production-ready status** with complete depl
 - **19 API Endpoints** - Full CRUD + specialized queries + AI-powered statement import
 - **143 Tests** - Multi-layer test infrastructure (Unit, Integration, API, Bash)
 - **Event-Driven Integration** - All modules communicating via domain events
-- **CI/CD Pipelines** - Azure DevOps + GitHub Actions workflows configured
+- **CI/CD Pipeline** - Azure DevOps pipeline configured
 - **Complete Documentation** - 3,500+ lines across 15 markdown files
 - **Deployment Guide** - Step-by-step Azure deployment instructions
 - **Database Management** - pgAdmin integration for visual database management
@@ -476,5 +474,5 @@ The SpendBear backend has reached **production-ready status** with complete depl
 **Total Development Time:** ~12 hours
 **Modules Implemented:** 6/6 planned
 **Test Infrastructure:** Complete (Unit, Integration, API, Bash)
-**CI/CD Pipelines:** Configured (Azure DevOps + GitHub Actions)
+**CI/CD Pipeline:** Configured (Azure DevOps)
 **Status:** ✅ PRODUCTION READY + DEPLOYMENT READY
