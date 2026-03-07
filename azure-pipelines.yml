@@ -48,18 +48,22 @@ stages:
         command: build
         arguments: '--configuration $(BUILD_CONFIGURATION) --no-restore'
 
-    - task: DotNetCoreCLI@2
-      displayName: 'Unit Tests'
-      inputs:
-        command: test
-        arguments: >
-          --configuration $(BUILD_CONFIGURATION)
-          --no-build
-          --filter "FullyQualifiedName~Domain|Application"
-          --logger trx
-          --collect "XPlat Code Coverage"
+    - script: |
+        dotnet test \
+          --configuration $(BUILD_CONFIGURATION) \
+          --no-build \
+          --filter "FullyQualifiedName~Domain|Application" \
+          --logger trx \
+          --collect:"XPlat Code Coverage" \
           --results-directory $(Agent.TempDirectory)/TestResults
-        publishTestResults: true
+      displayName: 'Unit Tests'
+
+    - task: PublishTestResults@2
+      displayName: 'Publish Test Results'
+      condition: always()
+      inputs:
+        testResultsFormat: VSTest
+        testResultsFiles: '$(Agent.TempDirectory)/TestResults/**/*.trx'
 
     - task: DotNetCoreCLI@2
       displayName: 'Publish API'
