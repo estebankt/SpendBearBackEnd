@@ -90,10 +90,9 @@ stages:
         PathtoPublish: '$(PACKAGE_PATH)'
         ArtifactName: 'api-package'
 
-    - script: dotnet tool install --global dotnet-ef
-      displayName: 'Install EF Core tools'
-
     - script: |
+        dotnet tool install --global dotnet-ef
+        export PATH="$PATH:$HOME/.dotnet/tools"
         mkdir -p $(Build.ArtifactStagingDirectory)/migrations
         for module in Identity Spending Budgets Notifications Analytics StatementImport; do
           lower=$(echo $module | tr '[:upper:]' '[:lower:]')
