@@ -92,43 +92,74 @@ stages:
 
     - script: |
         dotnet tool install --global dotnet-ef
-        export PATH="$PATH:$HOME/.dotnet/tools"
-        OUT=$(Build.ArtifactStagingDirectory)/migrations
-        SP=src/Api/SpendBear.Api
-        mkdir -p $OUT
+        echo "##vso[task.setvariable variable=PATH]$PATH:$HOME/.dotnet/tools"
+        mkdir -p $(Build.ArtifactStagingDirectory)/migrations
+      displayName: 'Install EF Core tools'
 
+    - script: |
         dotnet ef migrations bundle \
           --project src/Modules/Identity/Identity.Infrastructure \
-          --startup-project $SP --context IdentityDbContext \
-          --self-contained -r linux-x64 --output $OUT/efbundle-identity --force
+          --startup-project src/Api/SpendBear.Api \
+          --context IdentityDbContext \
+          --self-contained -r linux-x64 \
+          --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-identity \
+          --force
+      displayName: 'Bundle: Identity'
 
+    - script: |
         dotnet ef migrations bundle \
           --project src/Modules/Spending/Spending.Infrastructure \
-          --startup-project $SP --context SpendingDbContext \
-          --self-contained -r linux-x64 --output $OUT/efbundle-spending --force
+          --startup-project src/Api/SpendBear.Api \
+          --context SpendingDbContext \
+          --self-contained -r linux-x64 \
+          --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-spending \
+          --force
+      displayName: 'Bundle: Spending'
 
+    - script: |
         dotnet ef migrations bundle \
           --project src/Modules/Budgets/Budgets.Infrastructure \
-          --startup-project $SP --context BudgetsDbContext \
-          --self-contained -r linux-x64 --output $OUT/efbundle-budgets --force
+          --startup-project src/Api/SpendBear.Api \
+          --context BudgetsDbContext \
+          --self-contained -r linux-x64 \
+          --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-budgets \
+          --force
+      displayName: 'Bundle: Budgets'
 
+    - script: |
         dotnet ef migrations bundle \
           --project src/Modules/Notifications/Notifications.Infrastructure \
-          --startup-project $SP --context NotificationsDbContext \
-          --self-contained -r linux-x64 --output $OUT/efbundle-notifications --force
+          --startup-project src/Api/SpendBear.Api \
+          --context NotificationsDbContext \
+          --self-contained -r linux-x64 \
+          --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-notifications \
+          --force
+      displayName: 'Bundle: Notifications'
 
+    - script: |
         dotnet ef migrations bundle \
           --project src/Modules/Analytics/Analytics.Infrastructure \
-          --startup-project $SP --context AnalyticsDbContext \
-          --self-contained -r linux-x64 --output $OUT/efbundle-analytics --force
+          --startup-project src/Api/SpendBear.Api \
+          --context AnalyticsDbContext \
+          --self-contained -r linux-x64 \
+          --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-analytics \
+          --force
+      displayName: 'Bundle: Analytics'
 
+    - script: |
         dotnet ef migrations bundle \
           --project src/Modules/StatementImport/StatementImport.Infrastructure \
-          --startup-project $SP --context StatementImportDbContext \
-          --self-contained -r linux-x64 --output $OUT/efbundle-statementimport --force
+          --startup-project src/Api/SpendBear.Api \
+          --context StatementImportDbContext \
+          --self-contained -r linux-x64 \
+          --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-statementimport \
+          --force
+      displayName: 'Bundle: StatementImport'
 
-        cp src/Shared/SpendBear.Infrastructure.Core/Outbox/outbox-init.sql $OUT/outbox-init.sql
-      displayName: 'Build migration bundles'
+    - script: |
+        cp src/Shared/SpendBear.Infrastructure.Core/Outbox/outbox-init.sql \
+          $(Build.ArtifactStagingDirectory)/migrations/outbox-init.sql
+      displayName: 'Bundle: copy outbox-init.sql'
 
     - task: PublishPipelineArtifact@1
       displayName: 'Publish migration bundles'
