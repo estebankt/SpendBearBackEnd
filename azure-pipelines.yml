@@ -93,18 +93,41 @@ stages:
     - script: |
         dotnet tool install --global dotnet-ef
         export PATH="$PATH:$HOME/.dotnet/tools"
-        mkdir -p $(Build.ArtifactStagingDirectory)/migrations
-        for module in Identity Spending Budgets Notifications Analytics StatementImport; do
-          lower=$(echo $module | tr '[:upper:]' '[:lower:]')
-          dotnet ef migrations bundle \
-            --project src/Modules/$module/$module.Infrastructure \
-            --startup-project src/Api/SpendBear.Api \
-            --self-contained -r linux-x64 \
-            --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-$lower \
-            --force
-        done
-        cp src/Shared/SpendBear.Infrastructure.Core/Outbox/outbox-init.sql \
-          $(Build.ArtifactStagingDirectory)/migrations/outbox-init.sql
+        OUT=$(Build.ArtifactStagingDirectory)/migrations
+        SP=src/Api/SpendBear.Api
+        mkdir -p $OUT
+
+        dotnet ef migrations bundle \
+          --project src/Modules/Identity/Identity.Infrastructure \
+          --startup-project $SP --context IdentityDbContext \
+          --self-contained -r linux-x64 --output $OUT/efbundle-identity --force
+
+        dotnet ef migrations bundle \
+          --project src/Modules/Spending/Spending.Infrastructure \
+          --startup-project $SP --context SpendingDbContext \
+          --self-contained -r linux-x64 --output $OUT/efbundle-spending --force
+
+        dotnet ef migrations bundle \
+          --project src/Modules/Budgets/Budgets.Infrastructure \
+          --startup-project $SP --context BudgetsDbContext \
+          --self-contained -r linux-x64 --output $OUT/efbundle-budgets --force
+
+        dotnet ef migrations bundle \
+          --project src/Modules/Notifications/Notifications.Infrastructure \
+          --startup-project $SP --context NotificationsDbContext \
+          --self-contained -r linux-x64 --output $OUT/efbundle-notifications --force
+
+        dotnet ef migrations bundle \
+          --project src/Modules/Analytics/Analytics.Infrastructure \
+          --startup-project $SP --context AnalyticsDbContext \
+          --self-contained -r linux-x64 --output $OUT/efbundle-analytics --force
+
+        dotnet ef migrations bundle \
+          --project src/Modules/StatementImport/StatementImport.Infrastructure \
+          --startup-project $SP --context StatementImportDbContext \
+          --self-contained -r linux-x64 --output $OUT/efbundle-statementimport --force
+
+        cp src/Shared/SpendBear.Infrastructure.Core/Outbox/outbox-init.sql $OUT/outbox-init.sql
       displayName: 'Build migration bundles'
 
     - task: PublishPipelineArtifact@1
