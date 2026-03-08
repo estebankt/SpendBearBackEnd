@@ -94,6 +94,7 @@ stages:
         dotnet tool install --global dotnet-ef
         echo "##vso[task.setvariable variable=PATH]$PATH:$HOME/.dotnet/tools"
         mkdir -p $(Build.ArtifactStagingDirectory)/migrations
+        dotnet restore src/Api/SpendBear.Api/SpendBear.Api.csproj -r linux-x64
       displayName: 'Install EF Core tools'
 
     - script: |
