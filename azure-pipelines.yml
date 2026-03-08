@@ -94,7 +94,6 @@ stages:
         dotnet tool install --global dotnet-ef
         echo "##vso[task.setvariable variable=PATH]$PATH:$HOME/.dotnet/tools"
         mkdir -p $(Build.ArtifactStagingDirectory)/migrations
-        dotnet restore src/Api/SpendBear.Api/SpendBear.Api.csproj -r linux-x64
       displayName: 'Install EF Core tools'
 
     - script: |
@@ -102,9 +101,10 @@ stages:
           --project src/Modules/Identity/Identity.Infrastructure \
           --startup-project src/Api/SpendBear.Api \
           --context IdentityDbContext \
+          --no-build --configuration Release \
           --self-contained -r linux-x64 \
           --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-identity \
-          --force --verbose
+          --force
       displayName: 'Bundle: Identity'
 
     - script: |
@@ -112,6 +112,7 @@ stages:
           --project src/Modules/Spending/Spending.Infrastructure \
           --startup-project src/Api/SpendBear.Api \
           --context SpendingDbContext \
+          --no-build --configuration Release \
           --self-contained -r linux-x64 \
           --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-spending \
           --force
@@ -122,6 +123,7 @@ stages:
           --project src/Modules/Budgets/Budgets.Infrastructure \
           --startup-project src/Api/SpendBear.Api \
           --context BudgetsDbContext \
+          --no-build --configuration Release \
           --self-contained -r linux-x64 \
           --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-budgets \
           --force
@@ -132,6 +134,7 @@ stages:
           --project src/Modules/Notifications/Notifications.Infrastructure \
           --startup-project src/Api/SpendBear.Api \
           --context NotificationsDbContext \
+          --no-build --configuration Release \
           --self-contained -r linux-x64 \
           --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-notifications \
           --force
@@ -142,6 +145,7 @@ stages:
           --project src/Modules/Analytics/Analytics.Infrastructure \
           --startup-project src/Api/SpendBear.Api \
           --context AnalyticsDbContext \
+          --no-build --configuration Release \
           --self-contained -r linux-x64 \
           --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-analytics \
           --force
@@ -152,6 +156,7 @@ stages:
           --project src/Modules/StatementImport/StatementImport.Infrastructure \
           --startup-project src/Api/SpendBear.Api \
           --context StatementImportDbContext \
+          --no-build --configuration Release \
           --self-contained -r linux-x64 \
           --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-statementimport \
           --force
