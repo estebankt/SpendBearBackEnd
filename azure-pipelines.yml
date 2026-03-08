@@ -241,8 +241,15 @@ stages:
             displayName: 'Migrate: StatementImport'
 
           - script: |
-              psql "$(CONNECTIONSTRING_DEFAULTCONNECTION)" \
-                -f $(Pipeline.Workspace)/migration-bundles/outbox-init.sql
+              CONN="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+              parse() { echo "$CONN" | tr ';' '\n' | grep -i "^$1=" | head -1 | sed "s/^[^=]*=//"; }
+              export PGHOST=$(parse "Host")
+              export PGDATABASE=$(parse "Database")
+              export PGUSER=$(parse "Username")
+              export PGPASSWORD=$(parse "Password")
+              export PGPORT=$(parse "Port"); export PGPORT=${PGPORT:-5432}
+              export PGSSLMODE=$(parse "SSL Mode"); export PGSSLMODE=${PGSSLMODE:-require}
+              psql -f $(Pipeline.Workspace)/migration-bundles/outbox-init.sql
             displayName: 'Migrate: Shared Outbox Table'
 
 # ─────────────────────────────────────────────
