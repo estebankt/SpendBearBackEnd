@@ -104,7 +104,7 @@ stages:
           --context IdentityDbContext \
           --self-contained -r linux-x64 \
           --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-identity \
-          --force
+          --force --verbose
       displayName: 'Bundle: Identity'
 
     - script: |
