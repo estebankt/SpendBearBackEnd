@@ -201,38 +201,41 @@ stages:
           - download: current
             artifact: migration-bundles
 
+          - script: chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-*
+            displayName: 'Make bundles executable'
+
           - script: |
-              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-identity
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
               $(Pipeline.Workspace)/migration-bundles/efbundle-identity \
                 --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
             displayName: 'Migrate: Identity'
 
           - script: |
-              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-spending
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
               $(Pipeline.Workspace)/migration-bundles/efbundle-spending \
                 --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
             displayName: 'Migrate: Spending'
 
           - script: |
-              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-budgets
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
               $(Pipeline.Workspace)/migration-bundles/efbundle-budgets \
                 --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
             displayName: 'Migrate: Budgets'
 
           - script: |
-              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-notifications
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
               $(Pipeline.Workspace)/migration-bundles/efbundle-notifications \
                 --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
             displayName: 'Migrate: Notifications'
 
           - script: |
-              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-analytics
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
               $(Pipeline.Workspace)/migration-bundles/efbundle-analytics \
                 --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
             displayName: 'Migrate: Analytics'
 
           - script: |
-              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-statementimport
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
               $(Pipeline.Workspace)/migration-bundles/efbundle-statementimport \
                 --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
             displayName: 'Migrate: StatementImport'
