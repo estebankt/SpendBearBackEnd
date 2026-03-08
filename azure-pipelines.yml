@@ -315,10 +315,12 @@ stages:
 # ─────────────────────────────────────────────
 - stage: DeployProduction
   displayName: 'Deploy → Production'
-  dependsOn: [DeployStaging, Migrate]
+  dependsOn: [Build, Migrate, DeployStaging]
   condition: |
     and(
-      succeeded(),
+      in(dependencies.Build.result, 'Succeeded'),
+      in(dependencies.Migrate.result, 'Succeeded'),
+      in(dependencies.DeployStaging.result, 'Succeeded', 'Skipped'),
       eq(variables['Build.Reason'], 'Manual'),
       eq('${{ parameters.deployTarget }}', 'production')
     )
