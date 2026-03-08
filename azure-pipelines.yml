@@ -248,7 +248,7 @@ stages:
               export PGUSER=$(parse "Username")
               export PGPASSWORD=$(parse "Password")
               export PGPORT=$(parse "Port"); export PGPORT=${PGPORT:-5432}
-              export PGSSLMODE=$(parse "SSL Mode"); export PGSSLMODE=${PGSSLMODE:-require}
+              SSL=$(parse "SSL Mode"); export PGSSLMODE=${SSL:-require}; export PGSSLMODE=$(echo "$PGSSLMODE" | tr '[:upper:]' '[:lower:]')
               psql -f $(Pipeline.Workspace)/migration-bundles/outbox-init.sql
             displayName: 'Migrate: Shared Outbox Table'
 
