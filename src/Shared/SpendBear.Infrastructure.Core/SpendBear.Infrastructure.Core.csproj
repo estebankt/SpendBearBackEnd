@@ -20,4 +20,8 @@
     <ProjectReference Include="..\SpendBear.SharedKernel\SpendBear.SharedKernel.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="Outbox\outbox-init.sql" />
+  </ItemGroup>
+
 </Project>

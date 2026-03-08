@@ -98,7 +98,7 @@ try
     // Infrastructure Core (Event Dispatcher, Outbox Processor, etc.)
     builder.Services.AddInfrastructureCore(builder.Configuration);
 
-    builder.Services.AddPostgreSqlContext<IdentityDbContext>(builder.Configuration);
+    builder.Services.AddPostgreSqlContext<IdentityDbContext>(builder.Configuration, migrationsHistoryTableSchema: "identity");
     builder.Services.AddIdentityInfrastructure();
     builder.Services.AddIdentityApplication();
 
@@ -157,34 +157,32 @@ try
     app.UseCors("AllowFrontend");
 
 
-    // Apply database migrations on startup
+    // Auto-migrate on startup for local development only.
+    // Staging and production migrations are applied by the CI/CD pipeline before deployment.
     if (app.Environment.IsDevelopment())
     {
-        using (var scope = app.Services.CreateScope())
+        using var scope = app.Services.CreateScope();
+        var services = scope.ServiceProvider;
+        try
         {
-            var services = scope.ServiceProvider;
-            try
-            {
-                Log.Information("Applying database migrations...");
-                await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
-                await services.GetRequiredService<SpendingDbContext>().Database.MigrateAsync();
-                await services.GetRequiredService<BudgetsDbContext>().Database.MigrateAsync();
-                await services.GetRequiredService<NotificationsDbContext>().Database.MigrateAsync();
-                await services.GetRequiredService<AnalyticsDbContext>().Database.MigrateAsync();
-                await services.GetRequiredService<StatementImportDbContext>().Database.MigrateAsync();
-                Log.Information("Database migrations applied successfully.");
+            Log.Information("Applying database migrations...");
+            await services.GetRequiredService<IdentityDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<SpendingDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<BudgetsDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<NotificationsDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<AnalyticsDbContext>().Database.MigrateAsync();
+            await services.GetRequiredService<StatementImportDbContext>().Database.MigrateAsync();
+            Log.Information("Database migrations applied successfully.");
 
-                // Ensure outbox table exists
-                var connectionString = app.Configuration.GetConnectionString("DefaultConnection")!;
-                await OutboxTableInitializer.EnsureOutboxTableAsync(
-                    connectionString,
-                    services.GetRequiredService<ILoggerFactory>().CreateLogger("OutboxTableInitializer"));
-            }
-            catch (Exception ex)
-            {
-                Log.Fatal(ex, "An error occurred while migrating the database.");
-                throw;
-            }
+            var connectionString = app.Configuration.GetConnectionString("DefaultConnection")!;
+            await OutboxTableInitializer.EnsureOutboxTableAsync(
+                connectionString,
+                services.GetRequiredService<ILoggerFactory>().CreateLogger("OutboxTableInitializer"));
+        }
+        catch (Exception ex)
+        {
+            Log.Fatal(ex, "An error occurred while migrating the database.");
+            throw;
         }
     }
 

@@ -15,7 +15,7 @@ public static class DependencyInjection
         IConfiguration configuration)
     {
         // Register DbContext with retry logic
-        services.AddPostgreSqlContext<BudgetsDbContext>(configuration);
+        services.AddPostgreSqlContext<BudgetsDbContext>(configuration, migrationsHistoryTableSchema: "budgets");
 
         services.AddScoped<IBudgetRepository, BudgetRepository>();
         services.AddScoped<IBudgetsUnitOfWork, UnitOfWork>();

@@ -90,10 +90,103 @@ stages:
         PathtoPublish: '$(PACKAGE_PATH)'
         ArtifactName: 'api-package'
 
+    - script: dotnet tool install --global dotnet-ef
+      displayName: 'Install EF Core tools'
+
+    - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/migrations
+        for module in Identity Spending Budgets Notifications Analytics StatementImport; do
+          lower=$(echo $module | tr '[:upper:]' '[:lower:]')
+          dotnet ef migrations bundle \
+            --project src/Modules/$module/$module.Infrastructure \
+            --startup-project src/Api/SpendBear.Api \
+            --self-contained -r linux-x64 \
+            --output $(Build.ArtifactStagingDirectory)/migrations/efbundle-$lower \
+            --force
+        done
+        cp src/Shared/SpendBear.Infrastructure.Core/Outbox/outbox-init.sql \
+          $(Build.ArtifactStagingDirectory)/migrations/outbox-init.sql
+      displayName: 'Build migration bundles'
+
+    - task: PublishPipelineArtifact@1
+      displayName: 'Publish migration bundles'
+      inputs:
+        targetPath: '$(Build.ArtifactStagingDirectory)/migrations'
+        artifactName: 'migration-bundles'
+
+# ─────────────────────────────────────────────
+- stage: Migrate
+  displayName: 'Apply Database Migrations'
+  dependsOn: Build
+  condition: |
+    and(
+      succeeded(),
+      eq(variables['Build.SourceBranch'], 'refs/heads/main'),
+      or(
+        eq(variables['Build.Reason'], 'IndividualCI'),
+        and(eq(variables['Build.Reason'], 'Manual'), ne('${{ parameters.deployTarget }}', 'none'))
+      )
+    )
+  variables:
+  - group: spendbear-production-vars
+  jobs:
+  - deployment: migrate_db
+    displayName: 'Run Migration Bundles'
+    environment: 'Production'
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: migration-bundles
+
+          - script: |
+              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-identity
+              $(Pipeline.Workspace)/migration-bundles/efbundle-identity \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Identity'
+
+          - script: |
+              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-spending
+              $(Pipeline.Workspace)/migration-bundles/efbundle-spending \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Spending'
+
+          - script: |
+              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-budgets
+              $(Pipeline.Workspace)/migration-bundles/efbundle-budgets \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Budgets'
+
+          - script: |
+              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-notifications
+              $(Pipeline.Workspace)/migration-bundles/efbundle-notifications \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Notifications'
+
+          - script: |
+              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-analytics
+              $(Pipeline.Workspace)/migration-bundles/efbundle-analytics \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Analytics'
+
+          - script: |
+              chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-statementimport
+              $(Pipeline.Workspace)/migration-bundles/efbundle-statementimport \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: StatementImport'
+
+          - script: |
+              psql "$(CONNECTIONSTRING_DEFAULTCONNECTION)" \
+                -f $(Pipeline.Workspace)/migration-bundles/outbox-init.sql
+            displayName: 'Migrate: Shared Outbox Table'
+
 # ─────────────────────────────────────────────
 - stage: DeployStaging
   displayName: 'Deploy → Staging'
-  dependsOn: Build
+  dependsOn: [Build, Migrate]
   condition: |
     and(
       succeeded(),
@@ -153,7 +246,7 @@ stages:
 # ─────────────────────────────────────────────
 - stage: DeployProduction
   displayName: 'Deploy → Production'
-  dependsOn: DeployStaging
+  dependsOn: [DeployStaging, Migrate]
   condition: |
     and(
       succeeded(),

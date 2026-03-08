@@ -17,7 +17,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         // Register DbContext with retry logic
-        services.AddPostgreSqlContext<SpendingDbContext>(configuration);
+        services.AddPostgreSqlContext<SpendingDbContext>(configuration, migrationsHistoryTableSchema: "spending");
 
         // Register module-specific UnitOfWork
         services.AddScoped<ISpendingUnitOfWork>(sp => sp.GetRequiredService<SpendingDbContext>());

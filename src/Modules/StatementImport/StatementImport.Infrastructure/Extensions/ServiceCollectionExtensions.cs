@@ -17,7 +17,7 @@ public static class ServiceCollectionExtensions
         IConfiguration configuration)
     {
         // Register DbContext with retry logic
-        services.AddPostgreSqlContext<StatementImportDbContext>(configuration);
+        services.AddPostgreSqlContext<StatementImportDbContext>(configuration, migrationsHistoryTableSchema: "statement_import");
 
         // Register module-specific UnitOfWork
         services.AddScoped<IStatementImportUnitOfWork>(sp => sp.GetRequiredService<StatementImportDbContext>());
