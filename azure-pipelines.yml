@@ -189,8 +189,73 @@ stages:
   variables:
   - group: spendbear-production-vars
   jobs:
+  - deployment: migrate_staging_db
+    displayName: 'Run Migration Bundles (Staging)'
+    environment: 'Staging'
+    variables:
+    - group: spendbear-staging-vars
+    pool:
+      vmImage: 'ubuntu-latest'
+    strategy:
+      runOnce:
+        deploy:
+          steps:
+          - download: current
+            artifact: migration-bundles
+
+          - script: chmod +x $(Pipeline.Workspace)/migration-bundles/efbundle-*
+            displayName: 'Make bundles executable'
+
+          - script: |
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+              $(Pipeline.Workspace)/migration-bundles/efbundle-identity \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Identity'
+
+          - script: |
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+              $(Pipeline.Workspace)/migration-bundles/efbundle-spending \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Spending'
+
+          - script: |
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+              $(Pipeline.Workspace)/migration-bundles/efbundle-budgets \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Budgets'
+
+          - script: |
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+              $(Pipeline.Workspace)/migration-bundles/efbundle-notifications \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Notifications'
+
+          - script: |
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+              $(Pipeline.Workspace)/migration-bundles/efbundle-analytics \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: Analytics'
+
+          - script: |
+              export ConnectionStrings__DefaultConnection="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+              $(Pipeline.Workspace)/migration-bundles/efbundle-statementimport \
+                --connection "$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+            displayName: 'Migrate: StatementImport'
+
+          - script: |
+              CONN="$(CONNECTIONSTRING_DEFAULTCONNECTION)"
+              parse() { echo "$CONN" | tr ';' '\n' | grep -i "^$1=" | head -1 | sed "s/^[^=]*=//"; }
+              export PGHOST=$(parse "Host")
+              export PGDATABASE=$(parse "Database")
+              export PGUSER=$(parse "Username")
+              export PGPASSWORD=$(parse "Password")
+              export PGPORT=$(parse "Port"); export PGPORT=${PGPORT:-5432}
+              SSL=$(parse "SSL Mode"); export PGSSLMODE=${SSL:-require}; export PGSSLMODE=$(echo "$PGSSLMODE" | tr '[:upper:]' '[:lower:]')
+              psql -f $(Pipeline.Workspace)/migration-bundles/outbox-init.sql
+            displayName: 'Migrate: Shared Outbox Table'
+
   - deployment: migrate_db
-    displayName: 'Run Migration Bundles'
+    displayName: 'Run Migration Bundles (Production)'
     environment: 'Production'
     pool:
       vmImage: 'ubuntu-latest'
@@ -292,6 +357,7 @@ stages:
               appName: $(STAGING_APP_NAME)
               appSettings: |
                 [
+                  {"name": "ASPNETCORE_ENVIRONMENT", "value": "Staging", "slotSetting": false},
                   {"name": "Auth0__Domain",   "value": "$(AUTH0_DOMAIN)",   "slotSetting": false},
                   {"name": "Auth0__Audience", "value": "$(AUTH0_AUDIENCE)", "slotSetting": false},
                   {"name": "ConnectionStrings__DefaultConnection", "value": "$(CONNECTIONSTRING_DEFAULTCONNECTION)", "slotSetting": false}
