@@ -1,391 +1,89 @@
-# SpendBear 🐻💰
+# SpendBear — Backend API
 
-> An open source, production-ready personal finance management system built with Domain-Driven Design principles
-
-**SpendBear is open source and welcomes contributions.** See [CONTRIBUTING.md](./CONTRIBUTING.md) to get involved.
-
-## Overview
-
-SpendBear is a personal finance tracker architected as a **Modular Monolith** using DDD, CQRS, and event-driven patterns. It helps users track expenses, manage budgets, receive notifications, and visualize spending habits through a modern, scalable architecture.
-
-**Status:** ✅ **Production Ready** - 6 modules implemented with 97% test coverage
-
-## Local Development Setup
-
-### Prerequisites
-
-| Tool | Purpose |
-|------|---------|
-| [.NET 10 SDK](https://dotnet.microsoft.com/download) | Build and run the API |
-| [Docker](https://docs.docker.com/get-docker/) | Run PostgreSQL, Redis, and PgAdmin |
-| [EF Core CLI tools](https://learn.microsoft.com/en-us/ef/core/cli/dotnet) | Apply database migrations |
-
-Install the EF Core tools if you don't have them:
-```bash
-dotnet tool install --global dotnet-ef
-```
-
-### 1. Start infrastructure
-
-This starts PostgreSQL 16, Redis 7, and PgAdmin 4:
-```bash
-docker-compose up -d
-```
-
-Verify the containers are running:
-```bash
-docker ps
-# You should see: postgres:16, redis:7, dpage/pgadmin4
-```
-
-### 2. Restore packages
-
-```bash
-dotnet restore
-```
-
-### 3. Apply database migrations
-
-Each module has its own schema and migrations. Run all six:
-```bash
-dotnet ef database update --project src/Modules/Identity/Identity.Infrastructure --startup-project src/Api/SpendBear.Api --context IdentityDbContext
-dotnet ef database update --project src/Modules/Spending/Spending.Infrastructure --startup-project src/Api/SpendBear.Api --context SpendingDbContext
-dotnet ef database update --project src/Modules/Budgets/Budgets.Infrastructure --startup-project src/Api/SpendBear.Api --context BudgetsDbContext
-dotnet ef database update --project src/Modules/Notifications/Notifications.Infrastructure --startup-project src/Api/SpendBear.Api --context NotificationsDbContext
-dotnet ef database update --project src/Modules/Analytics/Analytics.Infrastructure --startup-project src/Api/SpendBear.Api --context AnalyticsDbContext
-dotnet ef database update --project src/Modules/StatementImport/StatementImport.Infrastructure --startup-project src/Api/SpendBear.Api --context StatementImportDbContext
-```
-
-### 4. Run the API
-
-```bash
-dotnet run --project src/Api/SpendBear.Api
-```
-
-### 5. Verify it works
-
-- API docs: http://localhost:5109/scalar/v1
-- Run the quick smoke test: `./scripts/quick-test.sh`
-- PgAdmin: http://localhost:5050 (email: `admin@spendbear.com`, password: `admin`)
-
-### Authentication in development
-
-In development mode, the `DevelopmentAuthMiddleware` bypasses Auth0 and automatically injects a test user. No Auth0 configuration is needed for local development. The test user ID is `00000000-0000-0000-0000-000000000001`.
-
-### Configuration
-
-The project ships with two appsettings files:
-
-- **`appsettings.json`** - Base config with PostgreSQL connection string (`localhost`, user `postgres`, password `postgres`) matching docker-compose
-- **`appsettings.Development.json`** - Development overrides with Auth0 dev tenant credentials (already configured)
-
-You should not need to create or modify either file for local development.
-
-### Running tests
-
-```bash
-dotnet test
-```
-
-See [scripts/README.md](./scripts/README.md) for API integration test scripts.
-
-### Ports used
-
-| Port | Service |
-|------|---------|
-| 5109 | SpendBear API |
-| 5432 | PostgreSQL |
-| 6379 | Redis |
-| 5050 | PgAdmin |
-
-If any of these ports are already in use, stop the conflicting service or modify `docker-compose.yml` to use different host ports.
-
-### Tearing down
-
-```bash
-# Stop containers (preserves data)
-docker-compose down
-
-# Stop containers and delete all data
-docker-compose down -v
-```
-
-## Documentation
-
-### Core Documents
-- 📋 [Claude Context](./CLAUDE.md) - Development guidelines and project context
-- 📄 [Product Requirements](./documentation/PRD.md) - User stories and acceptance criteria
-- 📊 [Project Status](./documentation/PROJECT_STATUS.md) - Current implementation status and metrics
-
-### Module Documentation (900+ lines total)
-- 💰 [Spending Module](./documentation/SPENDING_MODULE_SUMMARY.md) - Complete module guide
-- 🎯 [Budgets Module](./documentation/BUDGETS_MODULE_SUMMARY.md) - Complete module guide
-- 🔔 [Notifications Module](./documentation/NOTIFICATIONS_MODULE_SUMMARY.md) - Complete module guide
-- 📈 [Analytics Module](./documentation/ANALYTICS_MODULE_SUMMARY.md) - Complete module guide
-- 📥 [Statement Import Module](./documentation/STATEMENT_IMPORT_MODULE_SUMMARY.md) - Complete module guide
-
-### Technical Documentation
-- 🏗️ [Architecture](./documentation/architecture.md) - System design and patterns
-- 🔌 [API Design](./documentation/api.md) - Endpoint specifications
-- 🚀 [Deployment](./documentation/deployment.md) - Infrastructure and CI/CD
-
-## Tech Stack
-
-### Backend
-- **.NET 10** with ASP.NET Core Web API
-- **PostgreSQL** with Entity Framework Core 10.0
-- **Auth0** JWT Bearer authentication
-- **Serilog** for structured logging
-- **Swagger/Scalar** for API documentation
-- **In-memory event dispatcher** (Kafka-ready)
-
-### Frontend
-- **Next.js 15** with TypeScript
-- **Vercel** deployment
-- **Chart.js** for analytics
-
-### Infrastructure
-- **Azure** Web Apps & Services
-- **Docker** containerization
-- **Azure DevOps** CI/CD
-
-## Architecture Highlights
-
-```
-┌──────────────────────────────────────────────────────────────────┐
-│                   API Layer (Auth0 JWT)                          │
-└──┬────────┬────────┬──────────┬────────┬────────┬───────────────┘
-   │        │        │          │        │        │
-Identity Spending  Budgets Notifications Analytics StatementImport
-   │        │        │          │        │        │
-   └────────┴────────┴──────────┴────────┴────────┘
-                         │
-              ┌──────────▼──────────┐
-              │  Event Dispatcher   │
-              └──────────┬──────────┘
-                         │
-              ┌──────────▼──────────┐
-              │    PostgreSQL       │
-              │  (6 schemas, 9 tables)
-              └─────────────────────┘
-```
-
-### Key Patterns
-- **Modular Monolith** - Module isolation with clear boundaries
-- **CQRS** - Separated read/write models (no MediatR)
-- **Event-Driven** - Cross-module async communication
-- **Outbox Pattern** - Guaranteed event delivery
-- **DDD** - Rich domain models with aggregates
-
-## Project Structure
-
-```
-SpendBear/Backend/
-├── src/
-│   ├── Modules/                # 6 domain modules
-│   │   ├── Identity/           # User management
-│   │   ├── Spending/           # Transactions & categories
-│   │   ├── Budgets/            # Budget tracking
-│   │   ├── Notifications/      # Email & push notifications
-│   │   ├── Analytics/          # Monthly summaries
-│   │   └── StatementImport/    # AI-powered PDF statement import
-│   ├── SharedKernel/           # Domain primitives
-│   ├── Infrastructure.Core/    # Event dispatcher
-│   └── Api/                    # Web API host
-├── tests/
-│   ├── Domain.Tests/           # 122 total tests
-│   ├── Application.Tests/      # 119 passing (97%)
-│   └── Integration/            # TestContainers E2E
-└── documentation/               # 1,900+ lines of docs
-```
-
-## Features
-
-### Implemented (Production Ready) ✅
-- ✅ **Identity Module** - User registration and profile management
-- ✅ **Spending Module** - Transaction tracking with categories (6 endpoints)
-- ✅ **Budgets Module** - Budget management with automatic threshold detection (4 endpoints)
-- ✅ **Notifications Module** - Multi-channel notifications (Email, Push, InApp)
-- ✅ **Analytics Module** - Monthly financial summaries with category breakdowns
-- ✅ **Statement Import Module** - AI-powered PDF bank statement parsing with review workflow (6 endpoints)
-- ✅ **Event-Driven Integration** - Cross-module communication via domain events
-- ✅ **Auth0 Authentication** - JWT Bearer token validation
-- ✅ **Database Migrations** - 7 migrations across 6 schemas
-- ✅ **Comprehensive Tests** - 122 tests with 97% pass rate
-
-### API Endpoints (19 total)
-**Identity (2):** Register user, Get profile
-**Spending (6):** Create/list/update/delete transactions, Create/list categories
-**Budgets (4):** Create/list/update/delete budgets
-**Notifications (2):** List notifications, Mark as read
-**Analytics (1):** Get monthly summary
-**Statement Import (6):** Upload statement, Get/list imports, Update categories, Confirm/cancel import
-
-### Upcoming
-- 🚧 Frontend dashboard (Next.js)
-- 🚧 iOS mobile app
-- 🚧 Advanced analytics & ML insights
-- 🚧 Receipt OCR scanning
-
-## Development
-
-### Useful commands
-```bash
-# Run tests
-dotnet test
-
-# Add a new migration (example for Spending module)
-dotnet ef migrations add MigrationName \
-  --project src/Modules/Spending/Spending.Infrastructure \
-  --startup-project src/Api/SpendBear.Api \
-  --context SpendingDbContext
-
-# Build Docker image
-docker build -t spendbear-api .
-
-# Format code
-dotnet format
-```
-
-### Conventions
-- **Feature folders** over layer folders
-- **Explicit over implicit** (no MediatR)
-- **Result pattern** for error handling
-- **Money as cents** in database
-
-## Testing Strategy
-
-### Test Coverage: 97% (119/122 tests passing)
-
-**Spending Module (25 tests)** ✅
-- TransactionTests.cs: 11 domain tests
-- MoneyTests.cs: 10 value object tests
-- CreateTransactionHandlerTests.cs: 4 application tests
-
-**Budgets Module (35 tests)** ✅
-- BudgetTests.cs: 20 domain tests
-- CreateBudgetHandlerTests.cs: 7 application tests
-- TransactionCreatedEventHandlerTests.cs: 8 integration tests
-
-**Notifications Module (31 tests)** ✅
-- NotificationTests.cs: 20 domain tests
-- BudgetWarningEventHandlerTests.cs: 6 application tests
-- BudgetExceededEventHandlerTests.cs: 5 application tests
-
-**Analytics Module (23/26 tests)** ⏳
-- AnalyticSnapshotTests.cs: 18 domain tests ✅
-- TransactionCreatedEventHandlerTests.cs: 5/8 application tests
-
-**Statement Import Module (28 tests)** ✅
-- StatementUploadTests.cs: 16 domain tests
-- ParsedTransactionTests.cs: 4 domain tests
-- UploadStatementHandlerTests.cs: 4 application tests
-- ConfirmImportHandlerTests.cs: 4 application tests
-
-**Integration Tests (1/3 tests)** ⏳
-- Infrastructure verified with TestContainers
-- Event timing adjustments needed for full E2E tests
-
-### Testing Stack
-- **xUnit** - Test framework
-- **FluentAssertions** - Readable assertions
-- **Moq** - Mocking framework
-- **TestContainers** - PostgreSQL for integration tests
-
-## Deployment
-
-### Environments
-- **Development** - Local Docker
-- **Staging** - Azure Web Apps (B1)
-- **Production** - Azure Web Apps (P1v3)
-
-### CI/CD
-Automated pipeline via Azure DevOps:
-1. Build & test
-2. Docker image creation
-3. Deploy to staging
-4. Manual approval
-5. Production deployment
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Follow coding conventions
-4. Add tests
-5. Submit pull request
-
-See [CONTRIBUTING.md](./CONTRIBUTING.md) for details.
-
-## Security
-
-- OAuth 2.0/OIDC via Auth0
-- JWT with 1-hour expiry
-- Row-level security
-- Encrypted at rest
-- No PII in logs
-
-Report security issues to: security@spendbear.com
-
-## License
-
-MIT License - see [LICENSE](./LICENSE) file
-
-## Support
-
-- 📧 Email: support@spendbear.com
-- 📚 Docs: https://docs.spendbear.com
-- 💬 Discord: https://discord.gg/spendbear
-
-## Implementation Status
-
-### ✅ Completed (Nov 2025)
-- [x] Project architecture and scaffolding
-- [x] Identity module (2 endpoints)
-- [x] Spending module (6 endpoints, 25 tests)
-- [x] Budgets module (4 endpoints, 35 tests)
-- [x] Notifications module (2 endpoints, 31 tests)
-- [x] Analytics module (1 endpoint, 23 tests)
-- [x] Statement Import module (6 endpoints, 28 tests)
-- [x] Event-driven integration across all modules
-- [x] Database migrations (7 migrations, 6 schemas)
-- [x] Integration test infrastructure (TestContainers)
-- [x] Comprehensive documentation (1,900+ lines)
-
-### 🚀 Next Steps
-- [ ] Manual testing of all endpoints
-- [ ] Frontend dashboard (Next.js + TypeScript)
-- [ ] CI/CD pipeline setup
-- [ ] Production deployment to Azure
-- [ ] Mobile app (iOS Swift)
-- [x] Bank statement import (AI-powered PDF parsing)
-- [ ] Advanced analytics with ML
-
-## Metrics
-
-| Metric | Value |
-|--------|-------|
-| Modules | 6 |
-| API Endpoints | 19 |
-| Domain Aggregates | 6 |
-| Domain Events | 12 |
-| Database Schemas | 6 |
-| Database Tables | 9 |
-| Migrations | 7 |
-| Total Tests | 122 |
-| Tests Passing | 119 (97%) |
-| Lines of Code | ~10,000 |
-| Documentation Lines | 1,900+ |
-
-## Status
-
-![Tests](https://img.shields.io/badge/tests-119%2F122%20passing-brightgreen)
-![Coverage](https://img.shields.io/badge/coverage-97%25-brightgreen)
-![.NET](https://img.shields.io/badge/.NET-10-blue)
-![License](https://img.shields.io/badge/license-MIT-blue)
-![Open Source](https://img.shields.io/badge/open%20source-yes-brightgreen)
-[![Contributions Welcome](https://img.shields.io/badge/contributions-welcome-orange)](./CONTRIBUTING.md)
+A personal finance management API built to demonstrate production-grade backend engineering: domain isolation, reliable event delivery, and zero-downtime deployments on a monolithic codebase that can scale to services if needed.
 
 ---
 
-**SpendBear** - Track spending, tame your budget 🐻
+## Architecture & Design Decisions
+
+**Modular Monolith over Microservices**
+The system is decomposed into six bounded contexts (Identity, Spending, Budgets, Analytics, Notifications, StatementImport), each with strict layer separation (Domain → Application → Infrastructure → Api). Modules communicate exclusively via domain events — no direct project references across module boundaries. This enforces the same decoupling discipline as microservices without the operational overhead of distributed systems at this stage.
+
+**CQRS without MediatR**
+Commands and queries are organized into vertical feature slices (`Application/Features/{FeatureName}/`). Handlers are registered directly with the DI container. MediatR was deliberately excluded to keep the dispatch path explicit and avoid pipeline magic that obscures behavior during debugging.
+
+**Outbox Pattern for Reliable Event Delivery**
+Domain events are written atomically to a `shared.outbox_messages` table within the same database transaction as the state change. A background `OutboxProcessor` polls and dispatches events asynchronously. This eliminates the dual-write problem without requiring a distributed transaction coordinator.
+
+**Result\<T\> over Exceptions**
+Expected failures (validation errors, not-found, business rule violations) are modelled as `Result<T>` return types. Exceptions are reserved for invariant violations and unexpected infrastructure failures, caught by a global exception handler that maps to RFC 9457 Problem Details responses.
+
+**Auth0 for Identity**
+Authentication is fully delegated to Auth0 (JWT Bearer). The backend resolves an internal `UserId` from the `sub` claim on first login and attaches it to the request context via `UserResolutionMiddleware`. No password storage or token issuance in-process.
+
+---
+
+## Core Tech Stack
+
+| Concern | Technology |
+|---|---|
+| Runtime | .NET 10 / ASP.NET Core Web API |
+| Database | PostgreSQL 16 (Neon in cloud) |
+| ORM | Entity Framework Core 10 + Npgsql |
+| Authentication | Auth0 (JWT Bearer) |
+| Logging | Serilog (structured, JSON in production) |
+| API Docs | Scalar / OpenAPI 3 |
+| Containerization | Docker + Docker Compose |
+| CI/CD | Azure DevOps Pipelines |
+| Hosting | Azure Web App + Azure Container Registry |
+
+---
+
+## Engineering Standards
+
+**Testing**
+- Unit tests cover domain invariants, value objects, and application handlers for all six modules
+- Integration tests use TestContainers (PostgreSQL) via `WebApplicationFactory` — no mocks for database interactions
+- API-level tests exercise full vertical slices including outbox event processing
+
+**CI/CD Pipeline** (`azure-pipelines.yml`)
+- Four-stage pipeline: Build & Test → Migrate → Deploy Staging → Deploy Production
+- EF Core migration bundles are compiled at build time and executed as a separate stage before deployment — migrations never run on app startup in non-development environments
+- Smoke tests (`/health`) gate each deployment stage
+- Production deploys require explicit manual trigger (`deployTarget: production`)
+
+**API Documentation**
+Scalar UI is available at `/scalar` in development. OpenAPI spec is auto-generated from endpoint metadata.
+
+---
+
+## Getting Started
+
+**Prerequisites:** Docker, Docker Compose
+
+```bash
+# Start PostgreSQL and pgAdmin
+docker compose up -d postgres pgadmin
+
+# Run the API (applies migrations and seeds dev data automatically)
+dotnet run --project src/Api/SpendBear.Api/SpendBear.Api.csproj
+```
+
+API: `http://localhost:5109`
+Scalar docs: `http://localhost:5109/scalar`
+pgAdmin: `http://localhost:5050`
+
+In development, Auth0 validation is bypassed by `DevelopmentAuthMiddleware`. All requests run as the seeded test user.
+
+---
+
+## Documentation
+
+| Document | Description |
+|---|---|
+| [Architecture](./documentation/architecture.md) | Detailed module boundaries, event flow, and data access patterns |
+| [API Reference](./documentation/api.md) | Endpoint specs, request/response shapes, error codes |
+| [Azure Deployment Guide](./documentation/AZURE_DEPLOYMENT_GUIDE.md) | Infrastructure setup, pipeline variables, environment configuration |
+| [Project Status](./documentation/PROJECT_STATUS.md) | Implementation progress by module |
+| [Outbox Pattern](./documentation/OUTBOX_PATTERN_SUMMARY.md) | Event delivery design and failure handling |
+| Module Summaries | [Spending](./documentation/SPENDING_MODULE_SUMMARY.md) · [Budgets](./documentation/BUDGETS_MODULE_SUMMARY.md) · [Notifications](./documentation/NOTIFICATIONS_MODULE_SUMMARY.md) · [Analytics](./documentation/ANALYTICS_MODULE_SUMMARY.md) · [StatementImport](./documentation/STATEMENT_IMPORT_MODULE_SUMMARY.md) |

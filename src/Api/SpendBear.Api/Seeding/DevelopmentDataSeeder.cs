@@ -108,7 +108,7 @@ public static class DevelopmentDataSeeder
         var result = new Dictionary<string, Guid>();
 
         await using var cmd = new NpgsqlCommand(
-            """SELECT "Id", "Name" FROM categories WHERE "IsSystemCategory" = true""", conn, tx);
+            """SELECT "Id", "Name" FROM spending.categories WHERE "IsSystemCategory" = true""", conn, tx);
 
         await using var reader = await cmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())
@@ -136,7 +136,7 @@ public static class DevelopmentDataSeeder
             var id = Guid.NewGuid();
             await using var cmd = new NpgsqlCommand(
                 """
-                INSERT INTO categories ("Id", "Name", "Description", "UserId", "IsSystemCategory")
+                INSERT INTO spending.categories ("Id", "Name", "Description", "UserId", "IsSystemCategory")
                 VALUES (@id, @name, @desc, @userId, false)
                 """, conn, tx);
 
